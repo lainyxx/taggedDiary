@@ -1,0 +1,7 @@
+{
+  "name": "taggedDiary",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
