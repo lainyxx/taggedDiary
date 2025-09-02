@@ -1,0 +1,24 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="delete()">
+        <ion-icon slot="icon-only" name="trash"></ion-icon>
+      </ion-button>
+      <ion-button fill="outline" (click)="save()">
+        保存
+        <ion-icon slot="end" name="save"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>
+      日記を書く
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <form class="ion-padding">
+    <ion-item>
+      <ion-input type="text" [(ngModel)]="sentence" name="sentence"></ion-input>
+    </ion-item>
+  </form>
+</ion-content>
