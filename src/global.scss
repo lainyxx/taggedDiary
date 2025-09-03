@@ -35,3 +35,10 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
+
+
+
+.has-focus.sc-ion-textarea-md-h textarea.sc-ion-textarea-md {
+  caret-color: black !important;                      //テキストボックスのcaretが--highlight-color-valid: white;で消えているので上書き
+}
+

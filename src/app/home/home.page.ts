@@ -28,9 +28,9 @@ export class HomePage implements OnInit {
   }
 
   addArticle() {
-    this.diary.unshift({article: ''});
-    localStorage.diary = JSON.stringify(this.diary);
-    this.nav.navigateForward('edit-page/0');
+    // this.diary.unshift({article: ''});
+    // localStorage.diary = JSON.stringify(this.diary);
+    this.nav.navigateForward('edit-page/-1');  // id:-1は新規作成を表す
   }
 
 }
