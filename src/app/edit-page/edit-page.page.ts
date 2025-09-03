@@ -3,9 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {  RouterLink, ActivatedRoute } from '@angular/router';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonMenuButton, IonItem, IonInput, 
-         IonButton, IonIcon, AlertController, NavController, IonTextarea } from '@ionic/angular/standalone';
+         IonButton, IonIcon, AlertController, NavController, IonTextarea, IonChip, IonLabel } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { save, trash, arrowBackOutline } from 'ionicons/icons';
+import { save, trash, arrowBackOutline, closeCircleOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-edit-page',
@@ -13,21 +13,23 @@ import { save, trash, arrowBackOutline } from 'ionicons/icons';
   styleUrls: ['./edit-page.page.scss'],
   standalone: true,
   imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonButtons, 
-            IonMenuButton, IonItem, IonInput, IonButton, IonIcon, RouterLink,  IonTextarea]
+            IonMenuButton, IonItem, IonInput, IonButton, IonIcon, RouterLink,  IonTextarea, IonChip, IonLabel]
 })
 export class EditPagePage implements OnInit {
 
-  diary: { article: string }[] = [
+  diary: { [key:string]: any }[] = [
   ];
   txt: string = "";
   id: number;    //編集する日記のid -1は新規作成
+  tags: string [] = [];
+  inputTag: string;
 
   constructor(
     private route: ActivatedRoute,
     public alertController: AlertController,
     private nav: NavController,
   ) {
-    addIcons({save, trash, arrowBackOutline});
+    addIcons({save, trash, arrowBackOutline, closeCircleOutline});
   }
 
   ngOnInit() {
@@ -39,17 +41,20 @@ export class EditPagePage implements OnInit {
       this.diary = JSON.parse(localStorage.diary);
       if (this.id !== -1) {
         this.txt = this.diary[this.id].article;
+        this.tags = this.diary[this.id].tags;
       }
     }
-    
   }
 
   save() {
     if (this.id == -1) {
-      this.diary.unshift({article: this.txt});
+      const now = new Date();
+      console.log(now)
+      this.diary.unshift({article: this.txt, tags:this.tags, date: now});
       this.id = 0;
     } else {
       this.diary[this.id].article = this.txt;
+      this.diary[this.id].tags = this.tags;
     }
     localStorage.diary = JSON.stringify(this.diary);
   }
@@ -78,4 +83,22 @@ export class EditPagePage implements OnInit {
     prompt.present();
   }
 
+  // public detectInputTag(event: CustomEvent) {    //二回連続で発火するなど安定しない
+  //   console.log("hi");
+  //   if (event.detail.value.length > 1 && event.detail.value.slice(-1).match(/( |　)/)) {   
+  //     this.tags.push(event.detail.value.trim());
+  //     this.inputTag = "";
+  //   }
+  // }
+  public detectChangeTag(event: CustomEvent) {
+    console.log("bye");
+    if (event.detail.value.length > 0) {
+      this.tags.push(event.detail.value.trim());
+      this.inputTag = "";
+    }
+  }
+
+  removeTag(index: number) {
+    this.tags.splice(index, 1);
+  }
 }

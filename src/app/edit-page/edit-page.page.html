@@ -18,10 +18,29 @@
       日記を書く
     </ion-title>
   </ion-toolbar>
+
+  <ion-item color="light" class="tag-chips" lines="full">
+      <div>
+        @for (t of tags; track $index) {
+          <ion-chip outline="true">
+            <ion-label>{{ t }}</ion-label>
+            <ion-icon name="close-circle-outline" (click)="removeTag($index)"></ion-icon>
+          </ion-chip>
+        }
+          <ion-input
+            rows="1"
+            placeholder="タグを入力"
+            (ionChange)="detectChangeTag($any($event))"
+            [(ngModel)]="inputTag"
+            name="inputTag"
+          ></ion-input>
+      </div>
+    </ion-item>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <form class="frm">
+    
     <ion-textarea class="tarea" [autoGrow]="true" [(ngModel)]="txt" name="txt" placeholder="日記を入力"></ion-textarea>
   </form>
 </ion-content>

@@ -3,9 +3,26 @@
   height: 100%;
 }
 
+ion-item.tag-chips {
+  --padding-start: 16px;
+  div {
+    padding: 8px 0;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+
+    ion-textarea {
+      margin: 0 0 0 8px;
+      font-size: 1rem;
+      flex-shrink: 0;
+      min-width: 100px;
+    }
+  }
+}
 
 .tarea {
-  height: 100%;
   padding: 4vw;
   --highlight-color-valid: white;
+  height: 100%;
 }
