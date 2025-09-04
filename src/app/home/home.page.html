@@ -1,29 +1,42 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      日記
-    </ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-menu contentId="main-content">
+  <ion-content>
+    <ion-list>
+      <ion-list-header>タグ検索</ion-list-header>
+      @for (t of uniqueTags; track $index) {
+        <ion-menu-toggle auto-hide="false">
+          <ion-item lines="none" detail="false">
+            <ion-chip [color]="tagStyles[$index].color" [outline]="tagStyles[$index].outline" (click)="toggleTag($index)">
+              <ion-label>{{ t }}</ion-label>
+            </ion-chip>
+          </ion-item>
+        </ion-menu-toggle>
+      }
+    </ion-list>
+  </ion-content>
+</ion-menu>
 
-<ion-content [fullscreen]="true">
-  <ion-list>
-    @for (d of diary; track $index) {
-      <ion-item  [routerLink]="['/edit-page/' + $index]">
-        <ion-label>{{d.article}}</ion-label>
-      </ion-item>  
-    }
-  </ion-list>
-
-  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-    <ion-fab-button (click)="addArticle()">
-      <ion-icon name="add"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
-
-
-  <!-- <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
-  </div> -->
-</ion-content>
+<div class="ion-page" id="main-content">
+  <ion-header [translucent]="true">
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-menu-button autoHide="false"></ion-menu-button>
+      </ion-buttons>
+      <ion-title>日記</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content [fullscreen]="true">
+    <ion-list>
+      @for (d of diary; track d) {
+        <ion-item  [routerLink]="['/edit-page/' + d.id]">
+          <ion-label>{{d.content}}</ion-label>
+        </ion-item>
+      }
+    </ion-list>
+  
+    <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+      <ion-fab-button (click)="addArticle()">
+        <ion-icon name="add"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
+  </ion-content>
+</div>

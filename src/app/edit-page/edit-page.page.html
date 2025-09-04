@@ -21,7 +21,7 @@
 
   <ion-item color="light" class="tag-chips" lines="full">
       <div>
-        @for (t of tags; track $index) {
+        @for (t of tags; track t) {
           <ion-chip outline="true">
             <ion-label>{{ t }}</ion-label>
             <ion-icon name="close-circle-outline" (click)="removeTag($index)"></ion-icon>

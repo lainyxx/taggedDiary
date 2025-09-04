@@ -7,6 +7,14 @@ import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonMenuButton,
 import { addIcons } from 'ionicons';
 import { save, trash, arrowBackOutline, closeCircleOutline } from 'ionicons/icons';
 
+// --- DiaryEntry インターフェース ---
+interface DiaryEntry {
+  id: number;
+  content: string;
+  tags: string[];
+  date: Date;
+}
+
 @Component({
   selector: 'app-edit-page',
   templateUrl: './edit-page.page.html',
@@ -17,10 +25,11 @@ import { save, trash, arrowBackOutline, closeCircleOutline } from 'ionicons/icon
 })
 export class EditPagePage implements OnInit {
 
-  diary: { [key:string]: any }[] = [
+  diary: DiaryEntry[] = [
   ];
   txt: string = "";
-  id: number;    //編集する日記のid -1は新規作成
+  id: number;           //編集する日記のid -1は新規作成
+  index: number = -1;        //編集する日記の配列上の添字
   tags: string [] = [];
   inputTag: string;
 
@@ -40,8 +49,11 @@ export class EditPagePage implements OnInit {
     if ('diary' in localStorage) {
       this.diary = JSON.parse(localStorage.diary);
       if (this.id !== -1) {
-        this.txt = this.diary[this.id].article;
-        this.tags = this.diary[this.id].tags;
+        for (let i: number = 0; i < this.diary.length; i++) {
+          if (this.diary[i].id === this.id) this.index = i;
+        }
+        this.txt = this.diary[this.index].content;
+        this.tags = this.diary[this.index].tags;
       }
     }
   }
@@ -49,12 +61,16 @@ export class EditPagePage implements OnInit {
   save() {
     if (this.id == -1) {
       const now = new Date();
-      console.log(now)
-      this.diary.unshift({article: this.txt, tags:this.tags, date: now});
-      this.id = 0;
+      console.log(now);
+      let newid;
+      if (this.diary.length === 0) newid = 0;
+      else newid = this.diary[0].id + 1;
+      this.diary.unshift({content: this.txt, tags:this.tags, date: now, id: newid});
+      this.id = newid;
+      this.index = 0;
     } else {
-      this.diary[this.id].article = this.txt;
-      this.diary[this.id].tags = this.tags;
+      this.diary[this.index].content = this.txt;
+      this.diary[this.index].tags = this.tags;
     }
     localStorage.diary = JSON.stringify(this.diary);
   }
@@ -70,9 +86,9 @@ export class EditPagePage implements OnInit {
           text: '削除',
           handler: data => {
             if (this.id !== -1) {
-              this.diary.splice(this.id, 1);
+              this.diary.splice(this.index, 1);
               localStorage.diary = JSON.stringify(this.diary);
-              this.nav.pop();       // this.nav.pop()をif文の外に書くとid:0のときなぜか動かない
+              this.nav.pop();       // this.nav.pop()をif文の外に書くとindex:0のときなぜか動かない
             } else {
               this.nav.pop();
             }
@@ -91,14 +107,13 @@ export class EditPagePage implements OnInit {
   //   }
   // }
   public detectChangeTag(event: CustomEvent) {
-    console.log("bye");
     if (event.detail.value.length > 0) {
       this.tags.push(event.detail.value.trim());
       this.inputTag = "";
     }
   }
 
-  removeTag(index: number) {
-    this.tags.splice(index, 1);
+  removeTag(i: number) {
+    this.tags.splice(i, 1);
   }
 }
