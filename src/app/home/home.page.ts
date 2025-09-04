@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive, ActivatedRoute } from '@angular/router';
 import { IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonList, IonLabel, NavController, IonFab,
-         IonFabButton, IonIcon, IonMenu, IonListHeader, IonButtons, IonMenuButton, IonMenuToggle, IonChip } from '@ionic/angular/standalone';
+         IonFabButton, IonIcon, IonMenu, IonListHeader, IonButtons, IonMenuButton, IonMenuToggle, IonChip,
+        AlertController, IonButton, MenuController } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { add } from 'ionicons/icons';
+import { LongPressDirective } from './long-press.directive';
 
 // --- DiaryEntry インターフェース ---
 interface DiaryEntry {
@@ -18,7 +20,8 @@ interface DiaryEntry {
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
   imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonList, IonLabel, RouterLink, RouterLinkActive,
-            IonFab, IonFabButton, IonIcon, IonMenu, IonListHeader, IonButtons, IonMenuButton, IonMenuToggle, IonChip],
+            IonFab, IonFabButton, IonIcon, IonMenu, IonListHeader, IonButtons, IonMenuButton, IonMenuToggle,
+            IonChip, IonButton, LongPressDirective],
 })
 export class HomePage implements OnInit {
   allDiary: DiaryEntry[] = [];
@@ -30,6 +33,8 @@ export class HomePage implements OnInit {
   constructor(
     public nav: NavController,
     private route: ActivatedRoute,
+    public alertController: AlertController,
+    private menuController: MenuController,
   ) {
     addIcons({ add });
   }
@@ -91,5 +96,34 @@ export class HomePage implements OnInit {
     return this.allDiary.filter(entry =>
       selectedTags.every(tag => entry.tags.includes(tag))
     );
+  }
+
+  async deleteTag(index: number) {
+    await this.menuController.close();
+    const t: string = this.uniqueTagsArray[index];
+    const prompt = await this.alertController.create({
+      header:  'タグ"' + t + '"を削除しますか？',
+      buttons: [
+        {
+          text: '閉じる'
+        },
+        {
+          text: '削除',
+          handler: data => {
+            for (let i:number = 0; i < this.allDiary.length; i++) {
+              this.allDiary[i].tags = this.allDiary[i].tags.filter(tag => tag !== t);
+            }
+            for (let i:number = 0; i < this.tagStyles.length; i++) {
+              this.tagStyles[i].outline = true;
+            }
+            this.selectedTags = [];
+            this.uniqueTags.delete(t);
+            this.diary = [...this.allDiary];
+            localStorage.diary = JSON.stringify(this.allDiary);
+          }
+        }
+      ]
+    });
+    prompt.present();
   }
 }

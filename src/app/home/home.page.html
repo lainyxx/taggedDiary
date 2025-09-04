@@ -4,8 +4,9 @@
       <ion-list-header>タグ検索</ion-list-header>
       @for (t of uniqueTags; track $index) {
         <ion-menu-toggle auto-hide="false">
-          <ion-item lines="none" detail="false">
-            <ion-chip [color]="tagStyles[$index].color" [outline]="tagStyles[$index].outline" (click)="toggleTag($index)">
+          <ion-item lines="none" detail="false" >
+            <ion-chip [color]="tagStyles[$index].color" [outline]="tagStyles[$index].outline"
+                      (click)="toggleTag($index)" long-press [delay]="700" (press)="deleteTag(0)">
               <ion-label>{{ t }}</ion-label>
             </ion-chip>
           </ion-item>
