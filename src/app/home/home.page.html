@@ -1,13 +1,16 @@
+<!-- メニュー -->
 <ion-menu contentId="main-content">
   <ion-content>
     <ion-list>
       <ion-list-header>タグ検索</ion-list-header>
-      @for (t of uniqueTags; track $index) {
+      @for (tag of uniqueTags; track tag) {
         <ion-menu-toggle auto-hide="false">
           <ion-item lines="none" detail="false" >
-            <ion-chip [color]="tagStyles[$index].color" [outline]="tagStyles[$index].outline"
-                      (click)="toggleTag($index)" long-press [delay]="700" (press)="deleteTag(0)">
-              <ion-label>{{ t }}</ion-label>
+            <ion-chip [color]="tagStyles.get(tag)?.color"
+                      [outline]="tagStyles.get(tag)?.outline"
+                      (click)="toggleTag(tag)"
+                      long-press [delay]="700" (press)="deleteUniqueTag(tag)">
+              <ion-label>{{ tag }}</ion-label>
             </ion-chip>
           </ion-item>
         </ion-menu-toggle>
@@ -16,6 +19,7 @@
   </ion-content>
 </ion-menu>
 
+<!-- メインページ -->
 <div class="ion-page" id="main-content">
   <ion-header [translucent]="true">
     <ion-toolbar>
@@ -23,21 +27,43 @@
         <ion-menu-button autoHide="false"></ion-menu-button>
       </ion-buttons>
       <ion-title>日記</ion-title>
+      <ion-buttons slot="end">
+        <ion-button autoHide="false">
+          <ion-icon slot="icon-only" name="search-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
     </ion-toolbar>
   </ion-header>
-  <ion-content [fullscreen]="true">
-    <ion-list>
-      @for (d of diary; track d) {
-        <ion-item  [routerLink]="['/edit-page/' + d.id]">
-          <ion-label>{{d.content}}</ion-label>
-        </ion-item>
-      }
-    </ion-list>
-  
+  <ion-content [fullscreen]="true" class="ion-padding">
+    @for (d of diary; track d) {
+      <ion-card [routerLink]="['/edit-page/' + d.id]" 
+                long-press [delay]="700" 
+                (press)="deleteEntry(d.id)">
+        <ion-card-header>
+          <ion-card-title>{{ d.date | date: 'yyyy/MM/dd (EEE)' }}</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          {{ d.content | slice:0:40 }}{{ d.content.length > 40 ? '...' : '' }}
+          <div class="tags">
+            @for (tag of d.tags; track tag) {
+              <ion-chip color="secondary" outline="true" long-press [delay]="700" (press)="deleteTag(tag, d.id)">
+                <ion-label>{{ tag }}</ion-label>
+              </ion-chip>
+            }
+          </div>
+        </ion-card-content>
+      </ion-card>
+    }
     <ion-fab slot="fixed" vertical="bottom" horizontal="end">
       <ion-fab-button (click)="addArticle()">
         <ion-icon name="add"></ion-icon>
       </ion-fab-button>
     </ion-fab>
   </ion-content>
+  <ion-footer class="ad-footer">
+    <div class="ad-container">
+      <!-- 広告コードをここに埋め込む -->
+      <img src="..\assets\1755830936_e2795e70.jpg" alt="広告" class="ad-banner"/>
+    </div>
+  </ion-footer>
 </div>

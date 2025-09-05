@@ -2,8 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {  RouterLink, ActivatedRoute } from '@angular/router';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonMenuButton, IonItem, IonInput, 
-         IonButton, IonIcon, AlertController, NavController, IonTextarea, IonChip, IonLabel } from '@ionic/angular/standalone';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonItem, IonInput, 
+         IonButton, IonIcon, AlertController, NavController, IonTextarea, IonChip, IonLabel,
+         ToastController  } from '@ionic/angular/standalone';
+import { DatePipe } from '@angular/common';
 import { addIcons } from 'ionicons';
 import { save, trash, arrowBackOutline, closeCircleOutline } from 'ionicons/icons';
 
@@ -21,51 +23,59 @@ interface DiaryEntry {
   styleUrls: ['./edit-page.page.scss'],
   standalone: true,
   imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonButtons, 
-            IonMenuButton, IonItem, IonInput, IonButton, IonIcon, RouterLink,  IonTextarea, IonChip, IonLabel]
+            IonItem, IonInput, IonButton, IonIcon, RouterLink,  IonTextarea, IonChip, IonLabel, DatePipe]
 })
 export class EditPagePage implements OnInit {
 
-  diary: DiaryEntry[] = [
-  ];
+  diary: DiaryEntry[] = [];
   txt: string = "";
   id: number;           //編集する日記のid -1は新規作成
   index: number = -1;        //編集する日記の配列上の添字
   tags: string [] = [];
   inputTag: string;
+  date: Date;            //最初に編集を開始した日時
 
   constructor(
     private route: ActivatedRoute,
     public alertController: AlertController,
     private nav: NavController,
+    public toastController: ToastController,
   ) {
     addIcons({save, trash, arrowBackOutline, closeCircleOutline});
   }
 
   ngOnInit() {
     this.id = Number(this.route.snapshot.paramMap.get('id'));
-  }
+    const data = localStorage.getItem('diary');
+    if (data) {
+      this.diary = JSON.parse(data) as DiaryEntry[];
+      this.diary = this.diary.map(entry => ({
+        ...entry,
+        date: new Date(entry.date)
+      }));
+    }
 
-  ionViewWillEnter() {
-    if ('diary' in localStorage) {
-      this.diary = JSON.parse(localStorage.diary);
-      if (this.id !== -1) {
-        for (let i: number = 0; i < this.diary.length; i++) {
-          if (this.diary[i].id === this.id) this.index = i;
-        }
-        this.txt = this.diary[this.index].content;
-        this.tags = this.diary[this.index].tags;
+    if (this.id !== -1) {
+      for (let i: number = 0; i < this.diary.length; i++) {
+        if (this.diary[i].id === this.id) this.index = i;
       }
+      this.txt = this.diary[this.index].content;
+      this.tags = this.diary[this.index].tags;
+      this.date = this.diary[this.index].date;
+    } else {
+      this.date = new Date();
     }
   }
 
-  save() {
+  ionViewWillEnter() {
+  }
+
+  async save() {
     if (this.id == -1) {
-      const now = new Date();
-      console.log(now);
-      let newid;
-      if (this.diary.length === 0) newid = 0;
-      else newid = this.diary[0].id + 1;
-      this.diary.unshift({content: this.txt, tags:this.tags, date: now, id: newid});
+      const newid = this.diary.length > 0
+        ? Math.max(...this.diary.map(d => d.id)) + 1
+        : 0;
+      this.diary.unshift({content: this.txt, tags:this.tags, date: this.date, id: newid});
       this.id = newid;
       this.index = 0;
     } else {
@@ -73,6 +83,12 @@ export class EditPagePage implements OnInit {
       this.diary[this.index].tags = this.tags;
     }
     localStorage.diary = JSON.stringify(this.diary);
+    const toast = await this.toastController.create({
+      message: '保存しました！',
+      duration: 2000,
+      color: 'light'
+    });
+    toast.present();
   }
 
   async delete() {
@@ -84,14 +100,12 @@ export class EditPagePage implements OnInit {
         },
         {
           text: '削除',
-          handler: data => {
+          handler: _ => {
             if (this.id !== -1) {
               this.diary.splice(this.index, 1);
               localStorage.diary = JSON.stringify(this.diary);
-              this.nav.pop();       // this.nav.pop()をif文の外に書くとindex:0のときなぜか動かない
-            } else {
-              this.nav.pop();
             }
+            this.nav.navigateBack('/home');
           }
         }
       ]
@@ -107,10 +121,11 @@ export class EditPagePage implements OnInit {
   //   }
   // }
   public detectChangeTag(event: CustomEvent) {
-    if (event.detail.value.length > 0) {
-      this.tags.push(event.detail.value.trim());
-      this.inputTag = "";
+    const value = event.detail.value.trim();
+    if (value.length > 0 && !this.tags.includes(value)) {
+      this.tags.push(value);
     }
+    this.inputTag = "";
   }
 
   removeTag(i: number) {
