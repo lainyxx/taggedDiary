@@ -1,4 +1,44 @@
 
+/* メニュー内のリスト全体 */
+ion-menu ion-content {
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+}
+
+/* タグリストのヘッダー */
+ion-list-header {
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  color: var(--ion-color-medium);
+}
+
+/* ion-item をフラットに見せる */
+ion-menu ion-item {
+  --inner-padding-end: 0;
+  --inner-padding-start: 0;
+  --min-height: auto;
+  margin: 4px 0;
+}
+
+/* チップをタグっぽく整列させる */
+ion-chip {
+  margin: 4px;
+  font-size: 0.9rem;
+  border-radius: 16px;
+  --background: var(--ion-color-light);
+  --color: var(--ion-color-dark);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* 選択 or hover 時の効果 */
+ion-chip:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
 
 ion-title {
   text-align: center;
@@ -12,23 +52,60 @@ ion-card {
 }
 
 ion-card-title {
-  font-size: 1.2rem;
+  font-size: 1.05rem;
   font-weight: bold;
   color: var(--ion-color-primary);
 }
 
 ion-card-subtitle {
-  font-size: 0.9rem;
+  font-size: 1.0rem;
   color: var(--ion-color-medium);
 }
 
+/* カード内のタグを横スクロールさせる */
 .tags {
-  margin-top: 8px;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: row;
+  overflow-x: auto;
+  white-space: nowrap;
   gap: 6px;
+  padding: 4px 0;
+
+  scroll-snap-type: x proximity; /* スナップさせたい場合 */
+  -webkit-overflow-scrolling: touch; /* iOS慣性スクロール */
 }
 
+/* カード内のタグを横スクロールさせる */
+.tags {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;       /* 横スクロール可能 */
+  white-space: nowrap;    /* 改行させない */
+  gap: 6px;               /* チップ間の隙間 */
+  padding: 4px 0;
+
+  scroll-snap-type: x mandatory; /* タグ単位でスナップ */
+  -webkit-overflow-scrolling: touch; /* iOSの慣性スクロール */
+}
+
+/* ion-chip を横スクロール内で適切に収める */
+.tags ion-chip {
+  flex: 0 0 auto;             /* コンテンツ幅に合わせて固定 */
+  scroll-snap-align: start;   /* スナップ開始位置をタグの左端に */
+  margin: 0;                  /* gapで余白調整 */
+}
+
+/* optional: スクロールバーを目立たなくする */
+.tags::-webkit-scrollbar {
+  height: 6px;
+}
+.tags::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+.tags::-webkit-scrollbar-track {
+  background: transparent;
+}
 
 .ad-footer {
   --background: #f8f8f8; /* 広告の背景色 */
