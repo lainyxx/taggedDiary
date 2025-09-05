@@ -2,7 +2,7 @@
 <ion-menu contentId="main-content">
   <ion-content>
     <ion-list>
-      <ion-list-header>タグ検索</ion-list-header>
+      <ion-list-header>タグ一覧</ion-list-header>
       @for (tag of uniqueTags; track tag) {
         <ion-menu-toggle auto-hide="false">
           <ion-item lines="none" detail="false" >
@@ -21,12 +21,12 @@
 
 <!-- メインページ -->
 <div class="ion-page" id="main-content">
-  <ion-header [translucent]="true">
+  <ion-header>
     <ion-toolbar>
       <ion-buttons slot="start">
         <ion-menu-button autoHide="false"></ion-menu-button>
       </ion-buttons>
-      <ion-title>日記</ion-title>
+      <ion-title>タグ付き日記</ion-title>
       <ion-buttons slot="end">
         <ion-button autoHide="false">
           <ion-icon slot="icon-only" name="search-outline"></ion-icon>
@@ -34,26 +34,31 @@
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
-  <ion-content [fullscreen]="true" class="ion-padding">
-    @for (d of diary; track d) {
-      <ion-card [routerLink]="['/edit-page/' + d.id]" 
-                long-press [delay]="700" 
-                (press)="deleteEntry(d.id)">
-        <ion-card-header>
-          <ion-card-title>{{ d.date | date: 'yyyy/MM/dd (EEE)' }}</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          {{ d.content | slice:0:40 }}{{ d.content.length > 40 ? '...' : '' }}
-          <div class="tags">
-            @for (tag of d.tags; track tag) {
-              <ion-chip color="secondary" outline="true" long-press [delay]="700" (press)="deleteTag(tag, d.id)">
-                <ion-label>{{ tag }}</ion-label>
-              </ion-chip>
-            }
-          </div>
-        </ion-card-content>
-      </ion-card>
-    }
+  <ion-content [fullscreen]="true" class="ion-padding" class="has-header">
+    <ion-list>
+      @for (d of diary; track d) {
+        <ion-item button detail="false" 
+                  (click)="goEdit(d.id)"
+                  long-press [delay]="700"
+                  (press)="deleteEntry(d.id)">
+          <ion-label>
+            <h2>{{ d.date | date: 'yyyy/MM/dd (EEE) HH:mm' }}</h2>
+            <p>{{ d.content | slice:0:40 }}{{ d.content.length > 40 ? '...' : '' }}</p>
+            <div class="tags">
+              @for (tag of d.tags; track tag) {
+                <ion-chip [color]="tagStyles.get(tag)?.color"
+                          [outline]="tagStyles.get(tag)?.outline"
+                          (click)="selectTag(tag, $event)"
+                          long-press [delay]="700" 
+                          (press)="deleteTag(tag, d.id)">
+                  <ion-label>{{ tag }}</ion-label>
+                </ion-chip>
+              }
+            </div>
+          </ion-label>
+        </ion-item>
+      }
+    </ion-list>
     <ion-fab slot="fixed" vertical="bottom" horizontal="end">
       <ion-fab-button (click)="addArticle()">
         <ion-icon name="add"></ion-icon>

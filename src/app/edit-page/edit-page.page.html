@@ -1,4 +1,4 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-button [routerLink]="['/home']" routerDirection="back">
@@ -38,7 +38,7 @@
     </ion-item>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content [fullscreen]="true" class="has-header">
   <form class="frm">
     
     <ion-textarea class="tarea" [autoGrow]="true" [(ngModel)]="txt" name="txt" placeholder="日記を入力"></ion-textarea>

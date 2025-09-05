@@ -12,6 +12,7 @@ ion-list-header {
   font-weight: bold;
   font-size: 1.1rem;
   margin-bottom: 8px;
+  padding-top: 16px;
   color: var(--ion-color-medium);
 }
 
@@ -24,7 +25,7 @@ ion-menu ion-item {
 }
 
 /* チップをタグっぽく整列させる */
-ion-chip {
+ion-menu ion-chip {
   margin: 4px;
   font-size: 0.9rem;
   border-radius: 16px;
@@ -33,47 +34,16 @@ ion-chip {
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* 選択 or hover 時の効果 */
-ion-chip:hover {
-  transform: scale(1.05);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-}
 
+ion-header {
+  padding-top: 16px;
+}
 
 ion-title {
   text-align: center;
 }
 
 
-ion-card {
-  margin-bottom: 16px;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-ion-card-title {
-  font-size: 1.05rem;
-  font-weight: bold;
-  color: var(--ion-color-primary);
-}
-
-ion-card-subtitle {
-  font-size: 1.0rem;
-  color: var(--ion-color-medium);
-}
-
-/* カード内のタグを横スクロールさせる */
-.tags {
-  display: flex;
-  flex-direction: row;
-  overflow-x: auto;
-  white-space: nowrap;
-  gap: 6px;
-  padding: 4px 0;
-
-  scroll-snap-type: x proximity; /* スナップさせたい場合 */
-  -webkit-overflow-scrolling: touch; /* iOS慣性スクロール */
-}
 
 /* カード内のタグを横スクロールさせる */
 .tags {
@@ -86,6 +56,9 @@ ion-card-subtitle {
 
   scroll-snap-type: x mandatory; /* タグ単位でスナップ */
   -webkit-overflow-scrolling: touch; /* iOSの慣性スクロール */
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* ion-chip を横スクロール内で適切に収める */
@@ -95,17 +68,6 @@ ion-card-subtitle {
   margin: 0;                  /* gapで余白調整 */
 }
 
-/* optional: スクロールバーを目立たなくする */
-.tags::-webkit-scrollbar {
-  height: 6px;
-}
-.tags::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 3px;
-}
-.tags::-webkit-scrollbar-track {
-  background: transparent;
-}
 
 .ad-footer {
   --background: #f8f8f8; /* 広告の背景色 */

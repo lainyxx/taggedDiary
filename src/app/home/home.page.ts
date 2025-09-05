@@ -96,6 +96,11 @@ export class HomePage implements OnInit {
     return Array.from(this.uniqueTags);
   }
 
+
+  goEdit(id: number) {
+    this.nav.navigateForward('/edit-page/' + id);
+  }
+
   toggleTag(t: string) {
     this.tagStyles.set(t, { color: 'primary', outline:!this.tagStyles.get(t)?.outline });
 
@@ -119,14 +124,19 @@ export class HomePage implements OnInit {
     );
   }
 
+  selectTag (t: string, event: Event) {
+    event.stopPropagation(); // クリックイベントの伝播を停止
+    this.toggleTag(t);
+  }
+
   async deleteEntry(id: number) {
     // 削除する記事のallDiary配列上の添字をidから取得 
     const index = this.allDiary.findIndex(entry => entry.id === id);
     if (index === -1) return;
     // 記事内容を取得
-    const d: string = this.allDiary[index].content;
+    const d: string = this.allDiary[index].content.substring(0, 12) + (this.allDiary[index].content.length > 12 ? '...' : '');
     const prompt = await this.alertController.create({
-      header:  '日記"' + d + '"を削除しますか？',
+      header:  '日記「' + d + '」を削除しますか？',
       buttons: [
         {
           text: '閉じる'
@@ -156,9 +166,9 @@ export class HomePage implements OnInit {
     const index = this.allDiary.findIndex(entry => entry.id === id);
     if (index === -1) return;
     // 記事内容を取得
-    const d: string = this.allDiary[index].content;
+    const d: string = this.allDiary[index].content.substring(0, 12) + (this.allDiary[index].content.length > 12 ? '...' : '');
     const prompt = await this.alertController.create({
-      header:  'タグ"' + t + '"を"' + d +'"から削除しますか？',
+      header:  'タグ「' + t + '」を「' + d +'」から削除しますか？',
       buttons: [
         {
           text: '閉じる'
@@ -187,7 +197,7 @@ export class HomePage implements OnInit {
   async deleteUniqueTag(t: string) {
     await this.menuController.close();
     const prompt = await this.alertController.create({
-      header:  'タグ"' + t + '"を削除しますか？',
+      header:  'タグ「' + t + '」を削除しますか？',
       buttons: [
         {
           text: '閉じる'
