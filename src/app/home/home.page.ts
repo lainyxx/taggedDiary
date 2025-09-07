@@ -7,6 +7,8 @@ import { DatePipe, SlicePipe } from '@angular/common';
 import { addIcons } from 'ionicons';
 import { add, searchOutline } from 'ionicons/icons';
 import { LongPressDirective } from './long-press.directive';
+import { AdMob, BannerAdOptions, BannerAdSize, BannerAdPosition, BannerAdPluginEvents, AdMobBannerSize, } from '@capacitor-community/admob';
+
 
 // --- DiaryEntry インターフェース ---
 interface DiaryEntry {
@@ -43,7 +45,19 @@ export class HomePage implements OnInit {
     addIcons({ add, searchOutline });
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    AdMob.addListener(
+      BannerAdPluginEvents.SizeChanged,
+      (size: AdMobBannerSize) => {
+        const content = document.querySelector('ion-fab');
+        if (content) {
+          // IonContent のパディング変数を更新
+          (content as HTMLElement).style.setProperty('padding-bottom', `${size.height}px`);
+        }
+      }
+    );
+
+  }
 
   ionViewWillEnter() {
       const data = localStorage.getItem('diary');
@@ -62,6 +76,19 @@ export class HomePage implements OnInit {
         // タグスタイルを初期化
         this.initTagStyles();
       }
+      // バナー広告を表示
+      this.showBanner();
+       // バナーの実サイズが判明/変化したら発火
+      
+  }
+
+  async showBanner() {
+    const options: BannerAdOptions = {
+      adId: 'ca-app-pub-3940256099942544/6300978111', // テスト用ID
+      adSize: BannerAdSize.BANNER,
+      position: BannerAdPosition.BOTTOM_CENTER,
+    };
+    await AdMob.showBanner(options);
   }
 
   addArticle() {
@@ -101,9 +128,11 @@ export class HomePage implements OnInit {
     this.nav.navigateForward('/edit-page/' + id);
   }
 
-  toggleTag(t: string) {
+  toggleTag(t: string, event?: Event) {
+    if (event !== undefined) event.stopPropagation(); // クリックイベントの伝播を停止
+    // タグスタイルを反転
     this.tagStyles.set(t, { color: 'primary', outline:!this.tagStyles.get(t)?.outline });
-
+    
     if (!this.tagStyles.get(t)?.outline) {
       // outline:falseの場合、タグ選択を有効化
       if (!this.selectedTags.includes(t)) {
@@ -122,11 +151,6 @@ export class HomePage implements OnInit {
     return this.allDiary.filter(entry =>
       selectedTags.every(tag => entry.tags.includes(tag))
     );
-  }
-
-  selectTag (t: string, event: Event) {
-    event.stopPropagation(); // クリックイベントの伝播を停止
-    this.toggleTag(t);
   }
 
   async deleteEntry(id: number) {

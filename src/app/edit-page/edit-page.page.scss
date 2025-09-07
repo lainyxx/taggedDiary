@@ -1,11 +1,8 @@
 
-ion-header {
-  padding-top: 16px;
+ion-toolbar {
+   padding-top: 18px !important;
 }
 
-.frm {
-  height: 100%;
-}
 
 ion-item.tag-chips {
   --padding-start: 16px;
@@ -24,6 +21,12 @@ ion-item.tag-chips {
     }
   }
 }
+
+
+// .frm {
+//   height: 100%;
+// }
+
 
 .tarea {
   padding: 4vw;

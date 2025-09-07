@@ -48,7 +48,7 @@
               @for (tag of d.tags; track tag) {
                 <ion-chip [color]="tagStyles.get(tag)?.color"
                           [outline]="tagStyles.get(tag)?.outline"
-                          (click)="selectTag(tag, $event)"
+                          (click)="toggleTag(tag, $event)"
                           long-press [delay]="700" 
                           (press)="deleteTag(tag, d.id)">
                   <ion-label>{{ tag }}</ion-label>
@@ -65,10 +65,4 @@
       </ion-fab-button>
     </ion-fab>
   </ion-content>
-  <ion-footer class="ad-footer">
-    <div class="ad-container">
-      <!-- 広告コードをここに埋め込む -->
-      <img src="..\assets\banner_7910.jpeg" alt="広告" class="ad-banner"/>
-    </div>
-  </ion-footer>
 </div>

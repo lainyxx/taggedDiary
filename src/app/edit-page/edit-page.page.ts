@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {  RouterLink, ActivatedRoute } from '@angular/router';
@@ -25,7 +25,11 @@ interface DiaryEntry {
   imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonButtons, 
             IonItem, IonInput, IonButton, IonIcon, RouterLink,  IonTextarea, IonChip, IonLabel, DatePipe]
 })
+
+
 export class EditPagePage implements OnInit {
+  @ViewChild('txtArea', { static: false }) textarea!: IonTextarea;
+  @ViewChild(IonContent, { static: false }) content!: IonContent;
 
   diary: DiaryEntry[] = [];
   txt: string = "";
@@ -130,5 +134,17 @@ export class EditPagePage implements OnInit {
 
   removeTag(i: number) {
     this.tags.splice(i, 1);
+  }
+
+
+  adjustContentPadding() {
+    setTimeout(() => {
+      this.textarea.getInputElement().then(el => {
+        const height = el.scrollHeight;
+        this.content.getScrollElement().then(scrollEl => {
+          scrollEl.style.paddingBottom = height + 'px';
+        });
+      });
+    }, 0);
   }
 }

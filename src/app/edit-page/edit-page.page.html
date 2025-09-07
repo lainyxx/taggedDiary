@@ -11,14 +11,16 @@
       </ion-button>
       <ion-button fill="outline" (click)="save()">
         保存
-        <ion-icon slot="end" name="save"></ion-icon>
+      <ion-icon slot="end" name="save"></ion-icon>
       </ion-button>
     </ion-buttons>
     <ion-title>
       {{ date | date: 'yyyy/MM/dd (EEE)' }}
     </ion-title>
   </ion-toolbar>
+</ion-header>
 
+<ion-toolbar class="tag-toolbar">
   <ion-item color="light" class="tag-chips" lines="full">
       <div>
         @for (t of tags; track t) {
@@ -36,11 +38,19 @@
           ></ion-input>
       </div>
     </ion-item>
-</ion-header>
+</ion-toolbar>
 
-<ion-content [fullscreen]="true" class="has-header">
-  <form class="frm">
+<ion-content>
+  <div>
     
-    <ion-textarea class="tarea" [autoGrow]="true" [(ngModel)]="txt" name="txt" placeholder="日記を入力"></ion-textarea>
-  </form>
+    <ion-textarea
+      #txtArea
+      class="tarea"
+      [autoGrow]="true" 
+      [(ngModel)]="txt" 
+      name="txt" 
+      placeholder="日記を入力"
+      (ionInput)="adjustContentPadding()"
+    ></ion-textarea>
+</div>
 </ion-content>
