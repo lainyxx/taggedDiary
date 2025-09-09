@@ -56,10 +56,12 @@ export class HomePage implements OnInit {
         }
       }
     );
+    // バナー広告を表示
+    this.showBanner();
 
   }
 
-  ionViewWillEnter() {
+  async ionViewWillEnter() {
       const data = localStorage.getItem('diary');
       if (data) {
         // ストレージから日記データをコピー
@@ -76,10 +78,8 @@ export class HomePage implements OnInit {
         // タグスタイルを初期化
         this.initTagStyles();
       }
-      // バナー広告を表示
-      this.showBanner();
-       // バナーの実サイズが判明/変化したら発火
-      
+      // バナー広告を再表示
+      await AdMob.resumeBanner();
   }
 
   async showBanner() {
@@ -91,9 +91,6 @@ export class HomePage implements OnInit {
     await AdMob.showBanner(options);
   }
 
-  addArticle() {
-    this.nav.navigateForward('/edit-page/-1');  // id:-1 は新規作成
-  }
 
   getUniqueTags(entries: DiaryEntry[]) {
     this.uniqueTags.clear();
@@ -123,6 +120,9 @@ export class HomePage implements OnInit {
     return Array.from(this.uniqueTags);
   }
 
+  addArticle() {
+    this.nav.navigateForward('/edit-page/-1');  // id:-1 は新規作成
+  }
 
   goEdit(id: number) {
     this.nav.navigateForward('/edit-page/' + id);

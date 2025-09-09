@@ -25,12 +25,22 @@ export class AppComponent {
   }
 
   async ngOnInit() {
-    await this.platform.ready();
+    // await this.platform.ready();
 
-    if (Capacitor.isNativePlatform()) {
-      Keyboard.setResizeMode({ mode: KeyboardResize.None });
-      console.log('Keyboard resize mode set to none');
-    }
+    // // キーボード表示時に手動リサイズ
+    // window.addEventListener('keyboardWillShow', (e) => {
+    //   const app = document.querySelector('ion-app');
+    //   if (app) {
+    //     app.style.marginBottom = (e as any).keyboardHeight + 4 + 'px';
+    //   }
+    // });
+
+    // window.addEventListener('keyboardWillHide', () => {
+    //   const app = document.querySelector('ion-app');
+    //   if (app) {
+    //     app.style.marginBottom = '0px';
+    //   }
+    // });
   }
 
 }

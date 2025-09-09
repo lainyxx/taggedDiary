@@ -8,6 +8,7 @@ import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonItem, IonIn
 import { DatePipe } from '@angular/common';
 import { addIcons } from 'ionicons';
 import { save, trash, arrowBackOutline, closeCircleOutline } from 'ionicons/icons';
+import { AdMob } from '@capacitor-community/admob';
 
 // --- DiaryEntry インターフェース ---
 interface DiaryEntry {
@@ -28,8 +29,8 @@ interface DiaryEntry {
 
 
 export class EditPagePage implements OnInit {
-  @ViewChild('txtArea', { static: false }) textarea!: IonTextarea;
-  @ViewChild(IonContent, { static: false }) content!: IonContent;
+  @ViewChild('txtArea', { static: false }) textArea!: IonTextarea;
+  // @ViewChild(IonContent, { static: false }) content!: IonContent;
 
   diary: DiaryEntry[] = [];
   txt: string = "";
@@ -48,7 +49,9 @@ export class EditPagePage implements OnInit {
     addIcons({save, trash, arrowBackOutline, closeCircleOutline});
   }
 
-  ngOnInit() {
+  async ngOnInit() {
+    await AdMob.hideBanner();
+
     this.id = Number(this.route.snapshot.paramMap.get('id'));
     const data = localStorage.getItem('diary');
     if (data) {
@@ -71,8 +74,16 @@ export class EditPagePage implements OnInit {
     }
   }
 
+    // ngAfterViewInit() {
+    //   this.textArea.ionChange.subscribe(()=>{
+    //   this.textArea.autoGrow = true;
+    //   });
+    // }
+
   ionViewWillEnter() {
   }
+
+
 
   async save() {
     if (this.id == -1) {
@@ -137,14 +148,4 @@ export class EditPagePage implements OnInit {
   }
 
 
-  adjustContentPadding() {
-    setTimeout(() => {
-      this.textarea.getInputElement().then(el => {
-        const height = el.scrollHeight;
-        this.content.getScrollElement().then(scrollEl => {
-          scrollEl.style.paddingBottom = height + 'px';
-        });
-      });
-    }, 0);
-  }
 }

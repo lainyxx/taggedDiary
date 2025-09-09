@@ -1,5 +1,9 @@
+header {
+  position: sticky !important;
+  top: 0 !important;
+}
 
-ion-toolbar {
+.header-toolbar {
    padding-top: 18px !important;
 }
 
@@ -13,23 +17,25 @@ ion-item.tag-chips {
     flex-wrap: wrap;
     align-items: center;
 
-    ion-textarea {
-      margin: 0 0 0 8px;
-      font-size: 1rem;
-      flex-shrink: 0;
-      min-width: 100px;
-    }
+    // ion-textarea {
+    //   margin: 0 0 0 8px;
+    //   font-size: 1rem;
+    //   flex-shrink: 0;
+    //   min-width: 100px;
+    // }
   }
 }
 
 
-// .frm {
-//   height: 100%;
-// }
-
+ion-content {
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+  margin: 74px 0 0 0;
+}
 
 .tarea {
-  padding: 4vw;
   --highlight-color-valid: white;
   height: 100%;
 }
