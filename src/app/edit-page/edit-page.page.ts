@@ -14,7 +14,7 @@ import { AdMob } from '@capacitor-community/admob';
 interface DiaryEntry {
   id: number;
   content: string;
-  tags: string[];
+  tags: ({name: string, editable: boolean})[];
   date: Date;
 }
 
@@ -29,16 +29,15 @@ interface DiaryEntry {
 
 
 export class EditPagePage implements OnInit {
-  @ViewChild('txtArea', { static: false }) textArea!: IonTextarea;
-  // @ViewChild(IonContent, { static: false }) content!: IonContent;
 
   diary: DiaryEntry[] = [];
   txt: string = "";
-  id: number;           //編集する日記のid -1は新規作成
+  id: number;           //編集する日記のid
+  newArticle: number = -1;    //新規作成時を意味するid
   index: number = -1;        //編集する日記の配列上の添字
-  tags: string [] = [];
-  inputTag: string;
-  date: Date;            //最初に編集を開始した日時
+  tags: ({name: string, editable: boolean})[] = [];
+  inputTag: string = "";
+  date: Date = new Date();         //最初に編集を開始した日時
 
   constructor(
     private route: ActivatedRoute,
@@ -62,7 +61,7 @@ export class EditPagePage implements OnInit {
       }));
     }
 
-    if (this.id !== -1) {
+    if (this.id !== this.newArticle) {
       for (let i: number = 0; i < this.diary.length; i++) {
         if (this.diary[i].id === this.id) this.index = i;
       }
@@ -70,15 +69,12 @@ export class EditPagePage implements OnInit {
       this.tags = this.diary[this.index].tags;
       this.date = this.diary[this.index].date;
     } else {
+      // 日時を取得
       this.date = new Date();
+      // 年タグを自動追加
+      this.tags.push({name: this.date.getFullYear().toString(), editable: false});
     }
   }
-
-    // ngAfterViewInit() {
-    //   this.textArea.ionChange.subscribe(()=>{
-    //   this.textArea.autoGrow = true;
-    //   });
-    // }
 
   ionViewWillEnter() {
   }
@@ -86,7 +82,7 @@ export class EditPagePage implements OnInit {
 
 
   async save() {
-    if (this.id == -1) {
+    if (this.id == this.newArticle) {
       const newid = this.diary.length > 0
         ? Math.max(...this.diary.map(d => d.id)) + 1
         : 0;
@@ -97,7 +93,7 @@ export class EditPagePage implements OnInit {
       this.diary[this.index].content = this.txt;
       this.diary[this.index].tags = this.tags;
     }
-    localStorage.diary = JSON.stringify(this.diary);
+    localStorage.setItem("diary", JSON.stringify(this.diary))
     const toast = await this.toastController.create({
       message: '保存しました！',
       duration: 2000,
@@ -116,9 +112,9 @@ export class EditPagePage implements OnInit {
         {
           text: '削除',
           handler: _ => {
-            if (this.id !== -1) {
+            if (this.id !== this.newArticle) {
               this.diary.splice(this.index, 1);
-              localStorage.diary = JSON.stringify(this.diary);
+              localStorage.setItem("diary", JSON.stringify(this.diary));
             }
             this.nav.navigateBack('/home');
           }
@@ -128,17 +124,10 @@ export class EditPagePage implements OnInit {
     prompt.present();
   }
 
-  // public detectInputTag(event: CustomEvent) {    //二回連続で発火するなど安定しない
-  //   console.log("hi");
-  //   if (event.detail.value.length > 1 && event.detail.value.slice(-1).match(/( |　)/)) {   
-  //     this.tags.push(event.detail.value.trim());
-  //     this.inputTag = "";
-  //   }
-  // }
   public detectChangeTag(event: CustomEvent) {
     const value = event.detail.value.trim();
-    if (value.length > 0 && !this.tags.includes(value)) {
-      this.tags.push(value);
+    if (value.length > 0 && !this.tags.some(t => t.name === value)) {
+      this.tags.push({name: value, editable: true});
     }
     this.inputTag = "";
   }
@@ -146,6 +135,4 @@ export class EditPagePage implements OnInit {
   removeTag(i: number) {
     this.tags.splice(i, 1);
   }
-
-
 }

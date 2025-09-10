@@ -3,14 +3,14 @@
   <ion-content>
     <ion-list>
       <ion-list-header>タグ一覧</ion-list-header>
-      @for (tag of uniqueTags; track tag) {
+      @for (tag of uniqueTags; track tag.name) {
         <ion-menu-toggle auto-hide="false">
           <ion-item lines="none" detail="false" >
-            <ion-chip [color]="tagStyles.get(tag)?.color"
-                      [outline]="tagStyles.get(tag)?.outline"
-                      (click)="toggleTag(tag)"
-                      long-press [delay]="700" (press)="deleteUniqueTag(tag)">
-              <ion-label>{{ tag }}</ion-label>
+            <ion-chip [color]="tagStyles.get(tag.name)?.color"
+                      [outline]="tagStyles.get(tag.name)?.outline"
+                      (click)="toggleTag(tag.name)"
+                      long-press [delay]="700" (press)="deleteUniqueTag(tag.name, tag.editable)">
+              <ion-label>{{ tag.name }}</ion-label>
             </ion-chip>
           </ion-item>
         </ion-menu-toggle>
@@ -22,18 +22,28 @@
 <!-- メインページ -->
 <div class="ion-page" id="main-content">
   <ion-header>
-    <ion-toolbar>
+    <ion-toolbar class="header-toolbar">
       <ion-buttons slot="start">
         <ion-menu-button autoHide="false"></ion-menu-button>
       </ion-buttons>
       <ion-title>タグ付き日記</ion-title>
       <ion-buttons slot="end">
-        <ion-button autoHide="false">
+        <ion-button autoHide="false" (click)="toggleSearchBar()">
           <ion-icon slot="icon-only" name="search-outline"></ion-icon>
         </ion-button>
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
+  @if(showSearchBar){
+    <ion-toolbar class="search-toolbar">
+      <ion-searchbar
+        placeholder="ワード検索（本文・タグ）"
+        (ionInput)="onSearchChange()"
+        [(ngModel)]="searchWord"
+        name="searchWord">
+      </ion-searchbar>
+    </ion-toolbar>
+  }
   <ion-content [fullscreen]="true" class="ion-padding" class="has-header">
     <ion-list>
       @for (d of diary; track d) {
@@ -45,13 +55,13 @@
             <h2>{{ d.date | date: 'yyyy/MM/dd (EEE) HH:mm' }}</h2>
             <p>{{ d.content | slice:0:40 }}{{ d.content.length > 40 ? '...' : '' }}</p>
             <div class="tags">
-              @for (tag of d.tags; track tag) {
-                <ion-chip [color]="tagStyles.get(tag)?.color"
-                          [outline]="tagStyles.get(tag)?.outline"
-                          (click)="toggleTag(tag, $event)"
+              @for (tag of d.tags; track tag.name) {
+                <ion-chip [color]="tagStyles.get(tag.name)?.color"
+                          [outline]="tagStyles.get(tag.name)?.outline"
+                          (click)="toggleTag(tag.name, $event)"
                           long-press [delay]="700" 
-                          (press)="deleteTag(tag, d.id)">
-                  <ion-label>{{ tag }}</ion-label>
+                          (press)="deleteTag(tag.name, tag.editable, d.id)">
+                  <ion-label>{{ tag.name }}</ion-label>
                 </ion-chip>
               }
             </div>
