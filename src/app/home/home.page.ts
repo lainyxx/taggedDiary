@@ -2,8 +2,8 @@ import { Component, OnInit  } from '@angular/core';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonList, IonLabel, NavController, IonFab,
          IonFabButton, IonIcon, IonMenu, IonListHeader, IonButtons, IonMenuButton, IonMenuToggle, IonChip,
-        AlertController, IonButton, MenuController, IonCardTitle, IonCardHeader, IonCardContent, IonFooter,
-        IonSearchbar } from '@ionic/angular/standalone';
+         AlertController, IonButton, MenuController, IonCardTitle, IonCardHeader, IonCardContent, IonFooter,
+         IonSearchbar } from '@ionic/angular/standalone';
 import { DatePipe, SlicePipe } from '@angular/common';
 import { addIcons } from 'ionicons';
 import { add, searchOutline } from 'ionicons/icons';
@@ -20,6 +20,11 @@ interface DiaryEntry {
   tags: ({name: string, editable: boolean})[];
   date: Date;
 }
+interface AppData {
+  version: number;
+  diary: DiaryEntry[];
+}
+const CURRENT_VERSION = 1;
 
 @Component({
   selector: 'app-home',
@@ -38,6 +43,7 @@ export class HomePage implements OnInit {
   tagStyles = new Map<string, { color: string; outline: boolean }>();
   searchWord: string = '';  // ワード検索用の変数
   showSearchBar: boolean = false; //  検索バーの表示フラグ
+  
 
 
   // testdate: string;
@@ -68,10 +74,27 @@ export class HomePage implements OnInit {
   }
 
   async ionViewWillEnter() {
-      const data = localStorage.getItem('diary');
+      // ローカルストレージからデータを取得
+      this.getAppData();
+      // バナー広告を再表示
+      await AdMob.resumeBanner();
+  }
+
+  async showBanner() {
+    const options: BannerAdOptions = {
+      adId: 'ca-app-pub-3940256099942544/6300978111', // テスト用ID
+      adSize: BannerAdSize.BANNER,
+      position: BannerAdPosition.BOTTOM_CENTER,
+    };
+    await AdMob.showBanner(options);
+  }
+
+  getAppData() {
+    const data = localStorage.getItem('appData');
       if (data) {
         // ストレージから日記データをコピー
-        this.allDiary = JSON.parse(localStorage.diary) as DiaryEntry[];
+        const appData = JSON.parse(data) as AppData;
+        this.allDiary = appData.diary;
         // 文字列 → Date に変換
         this.allDiary = this.allDiary.map(entry => ({
           ...entry,
@@ -84,17 +107,6 @@ export class HomePage implements OnInit {
         // タグスタイルを初期化
         this.initTagStyles();
       }
-      // バナー広告を再表示
-      await AdMob.resumeBanner();
-  }
-
-  async showBanner() {
-    const options: BannerAdOptions = {
-      adId: 'ca-app-pub-3940256099942544/6300978111', // テスト用ID
-      adSize: BannerAdSize.BANNER,
-      position: BannerAdPosition.BOTTOM_CENTER,
-    };
-    await AdMob.showBanner(options);
   }
 
 
@@ -207,11 +219,12 @@ export class HomePage implements OnInit {
             this.getUniqueTags(this.allDiary);
             // タグ一覧が更新されたので、選択タグも更新
             this.selectedTags = this.selectedTags.filter(tag => this.uniqueTags.some(t => t.name === tag));
-            // 選択タグが更新されたので、タグスタイルを更新し再検索
+            // 選択タグが更新されたので、タグスタイルを更新
             this.updateTagStyles();
+            // 再検索
             this.diary = this.searchEntries();
-            // Storageに保存
-            localStorage.setItem("diary", JSON.stringify(this.allDiary));
+            // 変更をStorageに保存
+            this.saveAppData();
           }
         }
       ]
@@ -227,7 +240,7 @@ export class HomePage implements OnInit {
     // 記事内容を取得
     const d: string = this.allDiary[index].content.substring(0, 12) + (this.allDiary[index].content.length > 12 ? '...' : '');
     const prompt = await this.alertController.create({
-      header:  'タグ「' + t + '」を「' + d +'」から削除しますか？',
+      header:  'タグ「' + t + '」を日記「' + d +'」から削除しますか？',
       buttons: [
         {
           text: '閉じる'
@@ -241,11 +254,12 @@ export class HomePage implements OnInit {
             this.getUniqueTags(this.allDiary);
             // タグ一覧が更新されたので、選択タグも更新
             this.selectedTags = this.selectedTags.filter(tag => this.uniqueTags.some(t => t.name === tag));
-            // 選択タグが更新されたので、タグスタイルを更新し再検索
+            // 選択タグが更新されたので、タグスタイルを更新
             this.updateTagStyles();
+            // 再検索
             this.diary = this.searchEntries();
-            // Storageに保存
-            localStorage.setItem("diary", JSON.stringify(this.allDiary));
+            // 変更をStorageに保存
+            this.saveAppData();
           }
         }
       ]
@@ -275,13 +289,22 @@ export class HomePage implements OnInit {
             this.selectedTags = [];
             // タグスタイルを更新
             this.updateTagStyles();
-            //　表示記事を更新、記事一覧を保存
+            //　表示記事を更新
             this.diary = [...this.allDiary];
-            localStorage.setItem("diary", JSON.stringify(this.allDiary));
+            // 変更をStorageに保存
+            this.saveAppData();
           }
         }
       ]
     });
     await prompt.present();
+  }
+
+  saveAppData() {
+    const appData: AppData = {
+      version: CURRENT_VERSION,
+      diary: this.allDiary
+    };
+    localStorage.setItem("appData", JSON.stringify(appData));
   }
 }

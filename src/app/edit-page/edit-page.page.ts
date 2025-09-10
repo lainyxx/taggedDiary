@@ -17,6 +17,12 @@ interface DiaryEntry {
   tags: ({name: string, editable: boolean})[];
   date: Date;
 }
+interface AppData {
+  version: number;
+  diary: DiaryEntry[];
+}
+const CURRENT_VERSION = 1;
+const NEW_ARTICLE: number = -1;    //新規作成時を意味するid
 
 @Component({
   selector: 'app-edit-page',
@@ -31,12 +37,11 @@ interface DiaryEntry {
 export class EditPagePage implements OnInit {
 
   diary: DiaryEntry[] = [];
-  txt: string = "";
   id: number;           //編集する日記のid
-  newArticle: number = -1;    //新規作成時を意味するid
   index: number = -1;        //編集する日記の配列上の添字
-  tags: ({name: string, editable: boolean})[] = [];
-  inputTag: string = "";
+  txt: string = "";           //表示テキスト
+  tags: ({name: string, editable: boolean})[] = [];   //表示タグ
+  inputTag: string = "";    //入力タグ
   date: Date = new Date();         //最初に編集を開始した日時
 
   constructor(
@@ -52,16 +57,20 @@ export class EditPagePage implements OnInit {
     await AdMob.hideBanner();
 
     this.id = Number(this.route.snapshot.paramMap.get('id'));
-    const data = localStorage.getItem('diary');
+    // ローカルストレージからデータを取得
+    const data = localStorage.getItem('appData');
+
     if (data) {
-      this.diary = JSON.parse(data) as DiaryEntry[];
+      // ストレージから日記データをコピー
+      const appData = JSON.parse(data) as AppData;
+      this.diary = appData.diary;
       this.diary = this.diary.map(entry => ({
         ...entry,
         date: new Date(entry.date)
       }));
     }
 
-    if (this.id !== this.newArticle) {
+    if (this.id !== NEW_ARTICLE) {
       for (let i: number = 0; i < this.diary.length; i++) {
         if (this.diary[i].id === this.id) this.index = i;
       }
@@ -82,7 +91,7 @@ export class EditPagePage implements OnInit {
 
 
   async save() {
-    if (this.id == this.newArticle) {
+    if (this.id == NEW_ARTICLE) {
       const newid = this.diary.length > 0
         ? Math.max(...this.diary.map(d => d.id)) + 1
         : 0;
@@ -93,7 +102,9 @@ export class EditPagePage implements OnInit {
       this.diary[this.index].content = this.txt;
       this.diary[this.index].tags = this.tags;
     }
-    localStorage.setItem("diary", JSON.stringify(this.diary))
+    // 変更をStorageに保存
+    this.saveAppData();
+    // 保存完了のトーストを表示
     const toast = await this.toastController.create({
       message: '保存しました！',
       duration: 2000,
@@ -112,7 +123,7 @@ export class EditPagePage implements OnInit {
         {
           text: '削除',
           handler: _ => {
-            if (this.id !== this.newArticle) {
+            if (this.id !== NEW_ARTICLE) {
               this.diary.splice(this.index, 1);
               localStorage.setItem("diary", JSON.stringify(this.diary));
             }
@@ -130,9 +141,30 @@ export class EditPagePage implements OnInit {
       this.tags.push({name: value, editable: true});
     }
     this.inputTag = "";
+    // 既存記事の編集時は変更を保存
+    if (this.id !== NEW_ARTICLE) {
+      this.diary[this.index].tags = this.tags;
+      // 変更をStorageに保存
+      this.saveAppData();
+    }
   }
 
   removeTag(i: number) {
     this.tags.splice(i, 1);
+    // 既存記事の編集時は変更を保存
+    if (this.id !== NEW_ARTICLE) {
+      this.diary[this.index].tags = this.tags;
+      // 変更をStorageに保存
+      this.saveAppData();
+    }
+  }
+
+  saveAppData() {
+    const appData: AppData = {
+      version: CURRENT_VERSION,
+      diary: this.diary
+    };
+    console.log(appData);
+    localStorage.setItem("appData", JSON.stringify(appData));
   }
 }
