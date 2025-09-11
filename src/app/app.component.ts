@@ -4,6 +4,8 @@ import { AdMob } from '@capacitor-community/admob';
 import { Platform } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 import { Keyboard, KeyboardResize  } from '@capacitor/keyboard';
+import 'quill/dist/quill.snow.css';
+import '../app/quill-modules/preserve-whitespace-module';  // <- 一度だけ import することで読み込まない問題が解決
 
 @Component({
   selector: 'app-root',

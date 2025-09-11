@@ -36,10 +36,16 @@
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
 
+@import "quill/dist/quill.snow.css"; // Quillエディタのスタイル
 
 
-.has-focus.sc-ion-textarea-md-h textarea.sc-ion-textarea-md {
-  caret-color: black !important;                      //テキストボックスのcaretが--highlight-color-valid: white;で消えているので上書き
+.ql-container.ql-snow {
+  border: none !important;        /* 枠線を消す */
+  font-size: 1.1rem;
+}
+
+::ng-deep .ql-editor {
+  white-space: pre !important;
 }
 
 

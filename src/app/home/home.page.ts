@@ -25,6 +25,7 @@ interface AppData {
   diary: DiaryEntry[];
 }
 const CURRENT_VERSION = 1;
+const NEW_ARTICLE: number = -1;    //新規作成時を意味するid
 
 @Component({
   selector: 'app-home',
@@ -43,6 +44,7 @@ export class HomePage implements OnInit {
   tagStyles = new Map<string, { color: string; outline: boolean }>();
   searchWord: string = '';  // ワード検索用の変数
   showSearchBar: boolean = false; //  検索バーの表示フラグ
+  weekDay = ["日", "月", "火", "水", "木", "金", "土"];
   
 
 
@@ -50,7 +52,6 @@ export class HomePage implements OnInit {
 
   constructor(
     public nav: NavController,
-    private route: ActivatedRoute,
     public alertController: AlertController,
     private menuController: MenuController,
   ) {
@@ -109,6 +110,17 @@ export class HomePage implements OnInit {
       }
   }
 
+  getPlainText(html: string): string {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    // img タグを削除
+    doc.querySelectorAll('img').forEach(img => img.remove());
+
+    // 残ったテキストを取得
+    return doc.body.textContent || '';
+  }
+
 
   getUniqueTags(entries: DiaryEntry[]) {
     const map = new Map<string, {name: string, editable: boolean}>();
@@ -136,7 +148,7 @@ export class HomePage implements OnInit {
   }
 
   addArticle() {
-    this.nav.navigateForward('/edit-page/-1');  // id:-1 は新規作成
+    this.nav.navigateForward('/edit-page/' + NEW_ARTICLE);
   }
 
   goEdit(id: number) {

@@ -52,8 +52,8 @@
                   long-press [delay]="700"
                   (press)="deleteEntry(d.id)">
           <ion-label>
-            <h2>{{ d.date | date: 'yyyy/MM/dd (EEE) HH:mm' }}</h2>
-            <p>{{ d.content | slice:0:40 }}{{ d.content.length > 40 ? '...' : '' }}</p>
+            <h2>{{ d.date | date: 'yyyy/MM/dd ' }} ({{ weekDay[d.date.getDay()] }}) {{ d.date | date: ' HH:mm' }}</h2>
+            <p>{{ getPlainText(d.content) | slice:0:40 }}{{ getPlainText(d.content).length > 40 ? '...' : '' }}</p>
             <div class="tags">
               @for (tag of d.tags; track tag.name) {
                 <ion-chip [color]="tagStyles.get(tag.name)?.color"

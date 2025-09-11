@@ -16,26 +16,25 @@ ion-item.tag-chips {
     flex-direction: row;
     flex-wrap: wrap;
     align-items: center;
-
-    // ion-textarea {
-    //   margin: 0 0 0 8px;
-    //   font-size: 1rem;
-    //   flex-shrink: 0;
-    //   min-width: 100px;
-    // }
   }
 }
 
 
 ion-content {
-  --padding-start: 12px;
-  --padding-end: 12px;
-  --padding-top: 8px;
-  --padding-bottom: 8px;
-  margin: 74px 0 0 0;
+  --padding-bottom: 24px;
 }
 
-.tarea {
-  --highlight-color-valid: white;
-  height: 100%;
+
+quill-editor {
+  display: block;
+  height: 100%;        /* 好きな高さ */
+}
+
+.ql-container {
+  min-height: 100%;    /* 入力部分の高さ */
+  height: 100% !important;
+}
+
+.ql-editor .ql-blank {
+  min-height: 100%;    /* 実際のテキスト入力欄 */
 }
