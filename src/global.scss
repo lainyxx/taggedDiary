@@ -39,13 +39,5 @@
 @import "quill/dist/quill.snow.css"; // Quillエディタのスタイル
 
 
-.ql-container.ql-snow {
-  border: none !important;        /* 枠線を消す */
-  font-size: 1.1rem;
-}
-
-::ng-deep .ql-editor {
-  white-space: pre !important;
-}
 
 

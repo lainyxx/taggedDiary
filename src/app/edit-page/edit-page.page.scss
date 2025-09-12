@@ -25,16 +25,4 @@ ion-content {
 }
 
 
-quill-editor {
-  display: block;
-  height: 100%;        /* 好きな高さ */
-}
 
-.ql-container {
-  min-height: 100%;    /* 入力部分の高さ */
-  height: 100% !important;
-}
-
-.ql-editor .ql-blank {
-  min-height: 100%;    /* 実際のテキスト入力欄 */
-}

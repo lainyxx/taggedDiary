@@ -12,9 +12,6 @@ import { AdMob } from '@capacitor-community/admob';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Camera, CameraSource, CameraResultType } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
-import { PreserveWhiteSpace } from '../quill-modules/preserve-whitespace-module';
-import Quill from 'quill';
-import { QuillModule } from 'ngx-quill';
 
 // --- DiaryEntry インターフェース ---
 interface DiaryEntry {
@@ -37,7 +34,7 @@ const NEW_ARTICLE: number = -1;    //新規作成時を意味するid
   standalone: true,
   imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonButtons, 
             IonItem, IonInput, IonButton, IonIcon, RouterLink,  IonTextarea, IonChip, IonLabel,
-            DatePipe, QuillModule,]
+            DatePipe,]
 })
 
 
@@ -51,7 +48,6 @@ export class EditPagePage implements OnInit {
   inputTag: string = "";    //入力タグ
   date: Date = new Date();         //最初に編集を開始した日時
   weekDay = ["日", "月", "火", "水", "木", "金", "土"];
-  quill!: Quill;
 
   constructor(
     private route: ActivatedRoute,
@@ -83,7 +79,7 @@ export class EditPagePage implements OnInit {
       for (let i: number = 0; i < this.diary.length; i++) {
         if (this.diary[i].id === this.id) this.index = i;
       }
-      this.setContent(this.diary[this.index].content);
+      this.txt = this.diary[this.index].content;
       this.tags = this.diary[this.index].tags;
       this.date = this.diary[this.index].date;
     } else {
@@ -95,13 +91,6 @@ export class EditPagePage implements OnInit {
   }
 
   ngAfterViewInit() {
-    this.quill = new Quill('#editor', {
-      modules: {
-        toolbar: false,  // ツールバーは非表示
-        preserveWhiteSpace: true, // ←ここでモジュールを有効化
-      },
-      theme: 'snow'
-    });
   }
 
   ionViewWillEnter() {
@@ -109,52 +98,17 @@ export class EditPagePage implements OnInit {
   
 
   async save() {
-    let html = this.getContent();
 
-    // Base64画像を抽出（JPEGとPNG両対応）
-    const imgRegex = /<img src="data:image\/(jpeg|png);base64,([\s\S]+?)">/g;
-    let match;
-    let index = 0;
-
-    while ((match = imgRegex.exec(html)) !== null) {
-      const type = match[1];         // jpeg or png
-      const base64 = match[2];       // Base64本体
-      const ext = type === 'jpeg' ? 'jpeg' : 'png';
-      const fileName = `img_${Date.now()}_${index}.${ext}`;
-
-      // ファイル保存
-      await Filesystem.writeFile({
-        path: fileName,
-        data: base64,
-        directory: Directory.Data,
-      });
-
-      // 保存したファイルの絶対URIを取得
-      const fileUri = await Filesystem.getUri({
-        directory: Directory.Data,
-        path: fileName
-      });
-
-      // Quill で参照できる形に変換
-      const fileSrc = Capacitor.convertFileSrc(fileUri.uri);
-
-      // HTML 内の src を置き換え
-      html = html.replace(match[0], `<img src="${fileSrc}">`);
-      index++;
-    }
-
-    // 本文に置き換え済み HTML を保存
-    this.setContent(html);
     // 日記配列に保存
     if (this.id === NEW_ARTICLE) {
       const newid = this.diary.length > 0
         ? Math.max(...this.diary.map(d => d.id)) + 1
         : 0;
-      this.diary.unshift({ content: this.getContent(), tags: this.tags, date: this.date, id: newid });
+      this.diary.unshift({ content: this.txt, tags: this.tags, date: this.date, id: newid });
       this.id = newid;
       this.index = 0;
     } else {
-      this.diary[this.index].content = this.getContent();
+      this.diary[this.index].content = this.txt;
       this.diary[this.index].tags = this.tags;
     }
 
@@ -233,40 +187,8 @@ export class EditPagePage implements OnInit {
     localStorage.setItem("appData", JSON.stringify(appData));
   }
 
-  // --- カメラロールから画像を挿入 ---
-  async insertImage() {
-    try {
-      const photo = await Camera.getPhoto({
-        source: CameraSource.Photos,
-        resultType: CameraResultType.Base64
-      });
+  insertImage() {
 
-      if (!photo.base64String) return;
-
-      const imgUrl = `data:image/jpeg;base64,${photo.base64String}`;
-
-      // カーソル位置取得
-      const range = this.quill.getSelection();
-      const index = range ? range.index : this.quill.getLength();
-
-      // 画像を挿入
-      this.quill.insertEmbed(index, 'image', imgUrl);
-
-      // カーソルを画像の後に移動
-      this.quill.setSelection(index + 1);
-
-    } catch (err) {
-      console.error('画像挿入エラー:', err);
-    }
   }
 
-  getContent(): string {
-    return this.quill ? this.quill.root.innerHTML : '';
-  }
-
-  setContent(content: string) {
-    if (this.quill) {
-      this.quill.root.innerHTML = content;
-    }
-  }
 }
