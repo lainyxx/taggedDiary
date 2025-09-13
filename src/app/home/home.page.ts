@@ -111,15 +111,29 @@ export class HomePage implements OnInit {
   }
 
   getPlainText(html: string): string {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
 
-    // img タグを削除
-    doc.querySelectorAll('img').forEach(img => img.remove());
+  // img タグを削除
+  doc.querySelectorAll('img').forEach(img => img.remove());
+  // div タグは中身を残して、その後にスペースを追加
+  doc.querySelectorAll('div').forEach(div => {
+    const fragment = doc.createDocumentFragment();
+    // 子要素（テキストやタグ）を全部移動
+    while (div.firstChild) {
+      fragment.appendChild(div.firstChild);
+    }
+    // 後ろにスペースを追加
+    fragment.appendChild(doc.createTextNode(' '));
+    // div を fragment で置き換える
+    div.parentNode?.replaceChild(fragment, div);
+  });
 
-    // 残ったテキストを取得
-    return doc.body.textContent || '';
-  }
+  console.log(doc.body.textContent);
+  // 残ったテキストを取得
+  return doc.body.textContent || '';
+}
+
 
 
   getUniqueTags(entries: DiaryEntry[]) {

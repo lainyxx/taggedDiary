@@ -43,7 +43,7 @@ export class EditPagePage implements OnInit {
   diary: DiaryEntry[] = [];
   id: number;           //編集する日記のid
   index: number = -1;        //編集する日記の配列上の添字
-  txt: string = "a";           //表示テキスト
+  txt: string = "";           //表示テキスト
   tags: ({name: string, editable: boolean})[] = [];   //表示タグ
   inputTag: string = "";    //入力タグ
   date: Date = new Date();         //最初に編集を開始した日時
@@ -88,9 +88,16 @@ export class EditPagePage implements OnInit {
       // 年タグを自動追加
       this.tags.push({name: this.date.getFullYear().toString(), editable: false});
     }
+
+    // 初期内容を反映
+    const editor = document.getElementById('editor');
+    if (editor) {
+      editor.innerHTML = this.txt;
+    }
   }
 
   ngAfterViewInit() {
+    
   }
 
   ionViewWillEnter() {
@@ -98,6 +105,11 @@ export class EditPagePage implements OnInit {
   
 
   async save() {
+    const editor = document.getElementById('editor');
+    if (editor) {
+      this.txt = editor.innerHTML;  // HTMLを保存
+    }
+    console.log(this.txt);
 
     // 日記配列に保存
     if (this.id === NEW_ARTICLE) {
@@ -187,8 +199,34 @@ export class EditPagePage implements OnInit {
     localStorage.setItem("appData", JSON.stringify(appData));
   }
 
-  insertImage() {
+  async insertImage() {
+  const photo = await Camera.getPhoto({
+    quality: 70,
+    allowEditing: false,
+    resultType: CameraResultType.Base64,
+    source: CameraSource.Photos
+  });
 
+  const imgUrl = `data:image/jpeg;base64,${photo.base64String}`;
+  const editor = document.getElementById('editor');  // 本文エディタのみ対象
+
+  if (editor) {
+    const img = document.createElement('img');
+    img.src = imgUrl;
+    img.style.maxWidth = '100%';
+    img.style.display = 'block';
+    img.style.margin = '10px 0';
+
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0 && editor.contains(selection.anchorNode)) {
+      // エディタ内にカーソルがある場合挿入
+      const range = selection.getRangeAt(0);
+      range.insertNode(img);
+    } else {
+      // カーソルがエディタ外なら末尾に挿入
+      editor.appendChild(img);
+    }
   }
+}
 
 }
