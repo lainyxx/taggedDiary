@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar class="header-toolbar">
     <ion-buttons slot="start">
-      <ion-button [routerLink]="['/home']" routerDirection="back">
+      <ion-button (click)="goHome()">
         <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -47,7 +47,7 @@
 
 <ion-content>
   <div id="editor"
-       contenteditable="true">
+       contenteditable="true" (input)="detectChangeText()">
   </div>
     <!-- <ion-textarea
       #txtArea

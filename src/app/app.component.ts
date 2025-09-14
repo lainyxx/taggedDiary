@@ -1,9 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { IonApp, IonRouterOutlet} from '@ionic/angular/standalone';
 import { AdMob } from '@capacitor-community/admob';
 import { Platform } from '@ionic/angular';
-import { Capacitor } from '@capacitor/core';
-import { Keyboard, KeyboardResize  } from '@capacitor/keyboard';
 
 @Component({
   selector: 'app-root',

@@ -48,6 +48,7 @@ export class EditPagePage implements OnInit {
   inputTag: string = "";    //入力タグ
   date: Date = new Date();         //最初に編集を開始した日時
   weekDay = ["日", "月", "火", "水", "木", "金", "土"];
+  isSaved: boolean = true;  //保存済みかどうかのフラグ
 
   constructor(
     private route: ActivatedRoute,
@@ -109,7 +110,6 @@ export class EditPagePage implements OnInit {
     if (editor) {
       this.txt = editor.innerHTML;  // HTMLを保存
     }
-    console.log(this.txt);
 
     // 日記配列に保存
     if (this.id === NEW_ARTICLE) {
@@ -126,6 +126,7 @@ export class EditPagePage implements OnInit {
 
     // Storage に保存
     this.saveAppData();
+    this.isSaved = true;
 
     // 保存完了トースト
     const toast = await this.toastController.create({
@@ -159,6 +160,29 @@ export class EditPagePage implements OnInit {
     prompt.present();
   }
 
+  async goHome() {
+    if (!this.isSaved) {
+      const prompt = await this.alertController.create({
+        header: '保存していない変更があります。変更を破棄して戻りますか？',
+        buttons: [
+          {
+            text: 'キャンセル',
+          },
+          {
+            text: '戻る', 
+            handler: _ => {
+              this.nav.navigateBack('/home');
+            }
+          }
+        ]
+      });
+      prompt.present();
+    }
+    else {
+      this.nav.navigateBack('/home');
+    }
+  }
+
   public async detectChangeTag(event: CustomEvent) {
     const value = event.detail.value.trim();
     if (value.length > 0 && !this.tags.some(t => t.name === value)) {
@@ -179,6 +203,10 @@ export class EditPagePage implements OnInit {
       });
       toast.present();
     }
+  }
+
+  detectChangeText() {
+    this.isSaved = false;
   }
 
   removeTag(i: number) {

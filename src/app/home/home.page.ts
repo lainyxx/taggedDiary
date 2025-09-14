@@ -1,8 +1,7 @@
 import { Component, OnInit  } from '@angular/core';
-import { RouterLink, ActivatedRoute } from '@angular/router';
 import { IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonList, IonLabel, NavController, IonFab,
          IonFabButton, IonIcon, IonMenu, IonListHeader, IonButtons, IonMenuButton, IonMenuToggle, IonChip,
-         AlertController, IonButton, MenuController, IonCardTitle, IonCardHeader, IonCardContent, IonFooter,
+         AlertController, IonButton, MenuController, 
          IonSearchbar } from '@ionic/angular/standalone';
 import { DatePipe, SlicePipe } from '@angular/common';
 import { addIcons } from 'ionicons';
@@ -31,10 +30,9 @@ const NEW_ARTICLE: number = -1;    //新規作成時を意味するid
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonList, IonLabel, RouterLink,
+  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonList, IonLabel,
             IonFab, IonFabButton, IonIcon, IonMenu, IonListHeader, IonButtons, IonMenuButton, IonMenuToggle,
-            IonChip, IonButton, LongPressDirective, IonCardTitle, IonCardHeader, IonCardContent, DatePipe,
-            SlicePipe, IonFooter, IonSearchbar, FormsModule],
+            IonChip, IonButton, LongPressDirective, DatePipe, SlicePipe, IonSearchbar, FormsModule],
 })
 export class HomePage implements OnInit {
   allDiary: DiaryEntry[] = [];
@@ -83,7 +81,8 @@ export class HomePage implements OnInit {
 
   async showBanner() {
     const options: BannerAdOptions = {
-      adId: 'ca-app-pub-3940256099942544/6300978111', // テスト用ID
+      adId: 'ca-app-pub-3940256099942544/9214589741', // テスト用ID
+      // adId: 'ca-app-pub-8898084637974737/3809248767', // 広告ユニットID
       adSize: BannerAdSize.BANNER,
       position: BannerAdPosition.BOTTOM_CENTER,
     };
