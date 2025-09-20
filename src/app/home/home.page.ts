@@ -9,6 +9,7 @@ import { add, searchOutline } from 'ionicons/icons';
 import { LongPressDirective } from './long-press.directive';
 import { AdMob, BannerAdOptions, BannerAdSize, BannerAdPosition, BannerAdPluginEvents, AdMobBannerSize, } from '@capacitor-community/admob';
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../environments/environment';
 
 
 
@@ -46,8 +47,6 @@ export class HomePage implements OnInit {
   
 
 
-  // testdate: string;
-
   constructor(
     public nav: NavController,
     public alertController: AlertController,
@@ -67,22 +66,20 @@ export class HomePage implements OnInit {
         }
       }
     );
-    // バナー広告を表示
-    this.showBanner();
-
   }
 
   async ionViewWillEnter() {
-      // ローカルストレージからデータを取得
-      this.getAppData();
-      // バナー広告を再表示
-      await AdMob.resumeBanner();
+    // ローカルストレージからデータを取得
+    this.getAppData();
+    // バナー広告を表示
+    this.showBanner();
+    // バナー広告を再表示
+    await AdMob.resumeBanner();
   }
 
   async showBanner() {
     const options: BannerAdOptions = {
-      adId: 'ca-app-pub-3940256099942544/9214589741', // テスト用ID
-      // adId: 'ca-app-pub-8898084637974737/3809248767', // 広告ユニットID
+      adId: environment.admob.bannerId,
       adSize: BannerAdSize.BANNER,
       position: BannerAdPosition.BOTTOM_CENTER,
     };
@@ -128,7 +125,6 @@ export class HomePage implements OnInit {
     div.parentNode?.replaceChild(fragment, div);
   });
 
-  console.log(doc.body.textContent);
   // 残ったテキストを取得
   return doc.body.textContent || '';
 }

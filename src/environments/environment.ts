@@ -3,7 +3,10 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  admob: {
+    bannerId: 'ca-app-pub-3940256099942544/9214589741', // テスト用
+  }
 };
 
 /*
