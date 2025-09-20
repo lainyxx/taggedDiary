@@ -59,9 +59,14 @@ export class HomePage implements OnInit {
     AdMob.addListener(
       BannerAdPluginEvents.SizeChanged,
       (size: AdMobBannerSize) => {
-        const content = document.querySelector('ion-fab');
+        const fab = document.querySelector('ion-fab');
+        if (fab) {
+          // IonFab のパディング変数を更新
+          (fab as HTMLElement).style.setProperty('padding-bottom', `${size.height}px`);
+        }
+        const content = document.getElementById('diary-list');
         if (content) {
-          // IonContent のパディング変数を更新
+          // IonList のマージン変数を更新
           (content as HTMLElement).style.setProperty('padding-bottom', `${size.height}px`);
         }
       }
