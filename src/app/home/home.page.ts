@@ -225,7 +225,8 @@ export class HomePage implements OnInit {
     const index = this.allDiary.findIndex(entry => entry.id === id);
     if (index === -1) return;
     // 記事内容を取得
-    const d: string = this.allDiary[index].content.substring(0, 12) + (this.allDiary[index].content.length > 12 ? '...' : '');
+    const txt: string = this.getPlainText(this.allDiary[index].content);
+    const d: string = txt.substring(0, 12) + (txt.length > 12 ? '...' : '');
     const prompt = await this.alertController.create({
       header:  '日記「' + d + '」を削除しますか？',
       buttons: [
@@ -259,7 +260,8 @@ export class HomePage implements OnInit {
     const index = this.allDiary.findIndex(entry => entry.id === id);
     if (index === -1) return;
     // 記事内容を取得
-    const d: string = this.allDiary[index].content.substring(0, 12) + (this.allDiary[index].content.length > 12 ? '...' : '');
+    const txt: string = this.getPlainText(this.allDiary[index].content);
+    const d: string = txt.substring(0, 12) + (txt.length > 12 ? '...' : '');
     const prompt = await this.alertController.create({
       header:  'タグ「' + t + '」を日記「' + d +'」から削除しますか？',
       buttons: [

@@ -1,9 +1,9 @@
 import { Component, OnInit  } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {  RouterLink, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonItem, IonInput, 
-         IonButton, IonIcon, AlertController, NavController, IonTextarea, IonChip, IonLabel,
+         IonButton, IonIcon, AlertController, NavController, IonChip, IonLabel,
          ToastController  } from '@ionic/angular/standalone';
 import { DatePipe } from '@angular/common';
 import { addIcons } from 'ionicons';
@@ -33,7 +33,7 @@ const NEW_ARTICLE: number = -1;    //新規作成時を意味するid
   styleUrls: ['./edit-page.page.scss'],
   standalone: true,
   imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonButtons, 
-            IonItem, IonInput, IonButton, IonIcon, RouterLink,  IonTextarea, IonChip, IonLabel,
+            IonItem, IonInput, IonButton, IonIcon, IonChip, IonLabel,
             DatePipe,]
 })
 
