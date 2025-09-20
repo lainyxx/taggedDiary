@@ -45,7 +45,7 @@
     </ion-toolbar>
   }
   <ion-content [fullscreen]="true" class="ion-padding" class="has-header">
-    <ion-list>
+    <ion-list id="diary-list">
       @for (d of diary; track d) {
         <ion-item button detail="false" 
                   (click)="goEdit(d.id)"
