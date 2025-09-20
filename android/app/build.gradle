@@ -17,11 +17,16 @@ android {
         }
     }
     buildTypes {
+        debug {
+            manifestPlaceholders = [ ADMOB_APP_ID:"ca-app-pub-3940256099942544~3347511713" ]
+        }
         release {
+            manifestPlaceholders = [ ADMOB_APP_ID:"ca-app-pub-8898084637974737~5497148221" ]
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    
 }
 
 repositories {

@@ -29,16 +29,11 @@
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
         </provider>
 
-        <!-- AdMob App テスト用 ID -->
+        <!-- AdMob App ID （build.gradleで定義）-->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713"
+            android:value="${ADMOB_APP_ID}"
         />
-        <!-- AdMob App　本番用 ID -->
-        <!-- <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-8898084637974737~5497148221"
-        /> -->
     </application>
 
     <!-- Permissions -->
