@@ -13,8 +13,7 @@
         <ion-icon slot="icon-only" name="trash"></ion-icon>
       </ion-button>
       <ion-button fill="outline" (click)="save()">
-        
-      <ion-icon slot="icon-only" name="save"></ion-icon>
+        <ion-icon slot="icon-only" name="save"></ion-icon>
       </ion-button>
     </ion-buttons>
     <ion-title>
@@ -35,9 +34,11 @@
           </ion-chip>
         }
           <ion-input
-            rows="1"
+            #input
             placeholder="タグを入力"
             (ionChange)="detectChangeTag($any($event))"
+            (keydown.enter)="input.setFocus()"
+            enterkeyhint="done"
             [(ngModel)]="inputTag"
             name="inputTag"
           ></ion-input>
@@ -49,12 +50,4 @@
   <div id="editor"
        contenteditable="true" (input)="detectChangeText()">
   </div>
-    <!-- <ion-textarea
-      #txtArea
-      class="tarea"
-      [(ngModel)]="txt" 
-      name="txt"
-      auto-grow="true"
-      placeholder="日記を入力"
-    ></ion-textarea> -->
 </ion-content>
