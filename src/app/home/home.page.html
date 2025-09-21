@@ -9,7 +9,7 @@
             <ion-chip [color]="tagStyles.get(tag.name)?.color"
                       [outline]="tagStyles.get(tag.name)?.outline"
                       (click)="toggleTag(tag.name)"
-                      long-press [delay]="700" (press)="deleteUniqueTag(tag.name, tag.editable)">
+                      long-press [delay]="700" (press)="renameUniqueTag(tag.name, tag.editable)">
               <ion-label>{{ tag.name }}</ion-label>
             </ion-chip>
           </ion-item>
