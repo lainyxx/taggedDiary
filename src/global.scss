@@ -36,8 +36,23 @@
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
 
-@import "quill/dist/quill.snow.css"; // Quillエディタのスタイル
 
 
+:root {
+	--ion-color-uneditable: #E57A00;
+	--ion-color-uneditable-rgb: 229,122,0;
+	--ion-color-uneditable-contrast: #000000;
+	--ion-color-uneditable-contrast-rgb: 0,0,0;
+	--ion-color-uneditable-shade: #ca6b00;
+	--ion-color-uneditable-tint: #e8871a;
+}
 
+.ion-color-uneditable {
+	--ion-color-base: var(--ion-color-uneditable);
+	--ion-color-base-rgb: var(--ion-color-uneditable-rgb);
+	--ion-color-contrast: var(--ion-color-uneditable-contrast);
+	--ion-color-contrast-rgb: var(--ion-color-uneditable-contrast-rgb);
+	--ion-color-shade: var(--ion-color-uneditable-shade);
+	--ion-color-tint: var(--ion-color-uneditable-tint);
+}
 

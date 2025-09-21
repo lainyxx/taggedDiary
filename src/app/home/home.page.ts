@@ -66,7 +66,7 @@ export class HomePage implements OnInit {
         }
         const content = document.getElementById('diary-list');
         if (content) {
-          // IonList のマージン変数を更新
+          // IonList のパディング変数を更新
           (content as HTMLElement).style.setProperty('padding-bottom', `${size.height}px`);
         }
       }
@@ -149,15 +149,17 @@ export class HomePage implements OnInit {
   initTagStyles() {
     this.tagStyles.clear();
     this.uniqueTags.forEach(tag => {
-      this.tagStyles.set(tag.name, { color: 'primary', outline: true });
+      const tagColor = tag.editable ? 'primary' : 'uneditable';
+      this.tagStyles.set(tag.name, { color: tagColor, outline: true });
     });
   }
 
   updateTagStyles() {
     this.tagStyles.clear();
     this.uniqueTags.forEach(tag => {
-      if (this.selectedTags.includes(tag.name)) this.tagStyles.set(tag.name, { color: 'primary', outline: false });
-      else this.tagStyles.set(tag.name, { color: 'primary', outline: true });
+      const tagColor = tag.editable ? 'primary' : 'uneditable';
+      const isSelected = this.selectedTags.includes(tag.name);
+      this.tagStyles.set(tag.name, { color: tagColor, outline: !isSelected });
     });
   }
 
@@ -210,7 +212,7 @@ export class HomePage implements OnInit {
   toggleTag(t: string, event?: Event) {
     if (event !== undefined) event.stopPropagation(); // クリックイベントの伝播を停止
     // タグスタイルを反転
-    this.tagStyles.set(t, { color: 'primary', outline:!this.tagStyles.get(t)?.outline });
+    this.tagStyles.set(t, { color: this.tagStyles.get(t)?.color as string, outline:!this.tagStyles.get(t)?.outline });
     
     if (!this.tagStyles.get(t)?.outline) {
       // outline:falseの場合、タグ選択を有効化
