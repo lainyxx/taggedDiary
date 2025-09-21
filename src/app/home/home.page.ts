@@ -297,9 +297,54 @@ export class HomePage implements OnInit {
     await prompt.present();
   }
 
-  async deleteUniqueTag(t: string, editable: boolean) {
-    if (!editable) return; // 編集不可タグは削除しない
+  async renameUniqueTag(t: string, editable: boolean) {
+    if (!editable) return; // 編集不可タグはリネームしない
     await this.menuController.close();
+    const prompt = await this.alertController.create({
+      header:  '新しいタグ名を入力してください',
+      inputs: [
+        {
+          name: 'tagName',
+          type: 'text',
+          value: t,
+          placeholder: 'タグ名'
+        }
+      ],
+      buttons: [
+        {
+          text: '閉じる'
+        },
+        {
+          text: '変更',
+          handler: data => {
+            if (!data.tagName || data.tagName.trim().length === 0) {
+              this.deleteUniqueTag(t); // 空文字なら削除
+              return;
+            }
+            // タグ名を全記事で置換
+            for (let i:number = 0; i < this.allDiary.length; i++) {
+              this.allDiary[i].tags = this.allDiary[i].tags.map(tag => 
+                tag.name === t ? { name: data.tagName.trim(), editable: tag.editable } : tag
+              );
+            }
+            // タグ一覧を更新
+            this.getUniqueTags(this.allDiary);
+            // 選択タグをクリア
+            this.selectedTags = [];
+            // タグスタイルを更新
+            this.updateTagStyles();
+            //　表示記事を更新
+            this.diary = [...this.allDiary];
+            // 変更をStorageに保存
+            this.saveAppData();
+          }
+        }
+      ]
+    });
+    await prompt.present();
+  }
+
+  async deleteUniqueTag(t: string) {
     const prompt = await this.alertController.create({
       header:  'タグ「' + t + '」を削除しますか？',
       buttons: [
