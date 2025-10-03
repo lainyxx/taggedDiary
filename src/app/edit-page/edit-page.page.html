@@ -35,7 +35,9 @@
         }
           <ion-input
             #input
-            placeholder="タグを入力"
+            [placeholder]="isFocused ? '' : 'タグを入力'"
+            (ionFocus)="isFocused = true"
+            (ionBlur)="isFocused = false"
             (ionChange)="detectChangeTag($any($event))"
             (keydown.enter)="input.setFocus()"
             enterkeyhint="done"
