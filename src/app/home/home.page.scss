@@ -43,6 +43,12 @@ ion-title {
   text-align: center;
 }
 
+.empty-state {
+  text-align: center;
+  margin-top: 40%;
+  color: var(--ion-color-medium);
+}
+
 
 /* カード内のタグを横スクロールさせる */
 .tags {
