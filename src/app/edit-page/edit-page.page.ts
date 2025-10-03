@@ -49,6 +49,7 @@ export class EditPagePage implements OnInit {
   date: Date = new Date();         //最初に編集を開始した日時
   weekDay = ["日", "月", "火", "水", "木", "金", "土"];
   isSaved: boolean = true;  //保存済みかどうかのフラグ
+  isFocused = false;    // タグ入力欄にフォーカスしているかのフラグ
 
   constructor(
     private route: ActivatedRoute,
