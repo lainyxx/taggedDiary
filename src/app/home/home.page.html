@@ -44,7 +44,14 @@
       </ion-searchbar>
     </ion-toolbar>
   }
+  <!-- 記事一覧 -->
   <ion-content [fullscreen]="true" class="ion-padding" class="has-header">
+  @if (diary.length === 0) {
+    <div class="empty-state">
+      <ion-icon name="document-outline" size="large"></ion-icon>
+      <p>まだ記事がありません。<br>右下の + ボタンから新規作成できます。</p>
+    </div>
+  } @else {
     <ion-list id="diary-list">
       @for (d of diary; track d) {
         <ion-item button detail="false" 
@@ -69,10 +76,12 @@
         </ion-item>
       }
     </ion-list>
-    <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-      <ion-fab-button (click)="addArticle()">
-        <ion-icon name="add"></ion-icon>
-      </ion-fab-button>
-    </ion-fab>
+  }
+  <!-- 記事新規作成ボタン -->
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button (click)="addArticle()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
   </ion-content>
 </div>
