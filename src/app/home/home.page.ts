@@ -74,13 +74,19 @@ export class HomePage implements OnInit {
   }
 
   async ionViewWillEnter() {
-    // ローカルストレージからデータを取得
-    this.getAppData();
-    // バナー広告を表示
-    this.showBanner();
-    // バナー広告を再表示
-    await AdMob.resumeBanner();
-  }
+  // ローカルストレージからデータを取得
+  this.getAppData();
+
+  // 🔽 タグや検索ワードをリセット
+  this.selectedTags = [];
+  this.searchWord = '';
+  this.updateTagStyles();
+  this.diary = this.searchEntries();
+
+  // バナー広告を表示
+  this.showBanner();
+  await AdMob.resumeBanner();
+}
 
   async showBanner() {
     const options: BannerAdOptions = {
