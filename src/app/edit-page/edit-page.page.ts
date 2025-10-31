@@ -2,16 +2,14 @@ import { Component, OnInit  } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonItem, IonInput, 
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonItem, IonInput,
          IonButton, IonIcon, AlertController, NavController, IonChip, IonLabel,
          ToastController  } from '@ionic/angular/standalone';
 import { DatePipe } from '@angular/common';
 import { addIcons } from 'ionicons';
 import { save, trash, arrowBackOutline, closeCircleOutline, imageOutline } from 'ionicons/icons';
 import { AdMob } from '@capacitor-community/admob';
-import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Camera, CameraSource, CameraResultType } from '@capacitor/camera';
-import { Capacitor } from '@capacitor/core';
 
 // --- DiaryEntry インターフェース ---
 interface DiaryEntry {
@@ -32,7 +30,7 @@ const NEW_ARTICLE: number = -1;    //新規作成時を意味するid
   templateUrl: './edit-page.page.html',
   styleUrls: ['./edit-page.page.scss'],
   standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonButtons, 
+  imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonButtons,
             IonItem, IonInput, IonButton, IonIcon, IonChip, IonLabel,
             DatePipe,]
 })
@@ -99,12 +97,12 @@ export class EditPagePage implements OnInit {
   }
 
   ngAfterViewInit() {
-    
+
   }
 
   ionViewWillEnter() {
   }
-  
+
 
   async save() {
     const editor = document.getElementById('editor');
@@ -153,7 +151,7 @@ export class EditPagePage implements OnInit {
               // 変更をStorageに保存
               this.saveAppData();
             }
-            this.nav.navigateBack('/home');
+            this.nav.navigateBack('/tabs/home');
           }
         }
       ]
@@ -170,9 +168,9 @@ export class EditPagePage implements OnInit {
             text: 'キャンセル',
           },
           {
-            text: '戻る', 
+            text: '戻る',
             handler: _ => {
-              this.nav.navigateBack('/home');
+              this.nav.navigateBack('/tabs/home');
             }
           }
         ]
@@ -180,7 +178,7 @@ export class EditPagePage implements OnInit {
       prompt.present();
     }
     else {
-      this.nav.navigateBack('/home');
+      this.nav.navigateBack('/tabs/home');
     }
   }
 

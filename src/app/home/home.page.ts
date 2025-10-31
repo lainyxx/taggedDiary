@@ -1,7 +1,7 @@
 import { Component, OnInit  } from '@angular/core';
 import { IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonList, IonLabel, NavController, IonFab,
          IonFabButton, IonIcon, IonMenu, IonListHeader, IonButtons, IonMenuButton, IonMenuToggle, IonChip,
-         AlertController, IonButton, MenuController, 
+         AlertController, IonButton, MenuController,
          IonSearchbar } from '@ionic/angular/standalone';
 import { DatePipe, SlicePipe } from '@angular/common';
 import { addIcons } from 'ionicons';
@@ -24,7 +24,7 @@ interface AppData {
   version: number;
   diary: DiaryEntry[];
 }
-const CURRENT_VERSION = 1;
+const CURRENT_VERSION = 1; // //appDataのバージョン
 const NEW_ARTICLE: number = -1;    //新規作成時を意味するid
 
 @Component({
@@ -44,7 +44,7 @@ export class HomePage implements OnInit {
   searchWord: string = '';  // ワード検索用の変数
   showSearchBar: boolean = false; //  検索バーの表示フラグ
   weekDay = ["日", "月", "火", "水", "木", "金", "土"];
-  
+
 
 
   constructor(
@@ -74,19 +74,19 @@ export class HomePage implements OnInit {
   }
 
   async ionViewWillEnter() {
-  // ローカルストレージからデータを取得
-  this.getAppData();
+    // ローカルストレージからデータを取得
+    this.getAppData();
 
-  // 🔽 タグや検索ワードをリセット
-  this.selectedTags = [];
-  this.searchWord = '';
-  this.updateTagStyles();
-  this.diary = this.searchEntries();
+    // 🔽 タグや検索ワードをリセット
+    this.selectedTags = [];
+    this.searchWord = '';
+    this.updateTagStyles();
+    this.diary = this.searchEntries();
 
-  // バナー広告を表示
-  this.showBanner();
-  await AdMob.resumeBanner();
-}
+    // バナー広告を表示
+    this.showBanner();
+    await AdMob.resumeBanner();
+  }
 
   async showBanner() {
     const options: BannerAdOptions = {
@@ -219,7 +219,7 @@ export class HomePage implements OnInit {
     if (event !== undefined) event.stopPropagation(); // クリックイベントの伝播を停止
     // タグスタイルを反転
     this.tagStyles.set(t, { color: this.tagStyles.get(t)?.color as string, outline:!this.tagStyles.get(t)?.outline });
-    
+
     if (!this.tagStyles.get(t)?.outline) {
       // outline:falseの場合、タグ選択を有効化
       if (!this.selectedTags.includes(t)) {
@@ -234,7 +234,7 @@ export class HomePage implements OnInit {
 
 
   async deleteEntry(id: number) {
-    // 削除する記事のallDiary配列上の添字をidから取得 
+    // 削除する記事のallDiary配列上の添字をidから取得
     const index = this.allDiary.findIndex(entry => entry.id === id);
     if (index === -1) return;
     // 記事内容を取得
@@ -269,7 +269,7 @@ export class HomePage implements OnInit {
 
   async deleteTag(t: string, editable: boolean, id: number) {
     if (!editable) return; // 編集不可タグは削除しない
-    // タグを削除する記事のallDiary配列上の添字をidから取得 
+    // タグを削除する記事のallDiary配列上の添字をidから取得
     const index = this.allDiary.findIndex(entry => entry.id === id);
     if (index === -1) return;
     // 記事内容を取得
@@ -329,7 +329,7 @@ export class HomePage implements OnInit {
             }
             // タグ名を全記事で置換
             for (let i:number = 0; i < this.allDiary.length; i++) {
-              this.allDiary[i].tags = this.allDiary[i].tags.map(tag => 
+              this.allDiary[i].tags = this.allDiary[i].tags.map(tag =>
                 tag.name === t ? { name: data.tagName.trim(), editable: tag.editable } : tag
               );
             }
