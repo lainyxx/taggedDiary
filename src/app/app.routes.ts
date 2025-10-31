@@ -1,14 +1,35 @@
+
 import { Routes } from '@angular/router';
 
 export const routes: Routes = [
   {
-    path: 'home',
-    loadComponent: () => import('./home/home.page').then((m) => m.HomePage),
+    path: '',
+    redirectTo: 'tabs',
+    pathMatch: 'full',
   },
   {
-    path: '',
-    redirectTo: 'home',
-    pathMatch: 'full',
+    path: 'tabs',
+    loadComponent: () => import('./tabs/tabs.page').then(m => m.TabsPage),
+    children: [
+      {
+        path: 'home',
+        loadComponent: () => import('./home/home.page').then(m => m.HomePage),
+      },
+      {
+        path: 'calendar',
+        loadComponent: () => import('./calendar/calendar.page').then(m => m.CalendarPage),
+      },
+      {
+        path: 'settings',
+        loadComponent: () => import('./settings/settings.page').then(m => m.SettingsPage),
+      },
+
+      {
+        path: '',
+        redirectTo: '/tabs/home',
+        pathMatch: 'full',
+      },
+    ],
   },
   {
     path: 'edit-page/:id',
