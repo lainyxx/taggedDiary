@@ -10,6 +10,8 @@ import { LongPressDirective } from './long-press.directive';
 import { AdMob, BannerAdOptions, BannerAdSize, BannerAdPosition, BannerAdPluginEvents, AdMobBannerSize, } from '@capacitor-community/admob';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../environments/environment';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 
 
 
@@ -51,8 +53,17 @@ export class HomePage implements OnInit {
     public nav: NavController,
     public alertController: AlertController,
     private menuController: MenuController,
+    private router: Router
   ) {
     addIcons({ add, searchOutline });
+    // ionViewWillEnterで初期化すると編集画面からの遷移時に発火しないため、手動で初期化
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: any) => {
+        if (event.urlAfterRedirects === '/tabs/home') {
+          this.initHomePage();
+        }
+      });
   }
 
   ngOnInit() {
@@ -73,7 +84,7 @@ export class HomePage implements OnInit {
     );
   }
 
-  async ionViewWillEnter() {
+  async initHomePage() {
     // ローカルストレージからデータを取得
     this.getAppData();
 
