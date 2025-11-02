@@ -4,16 +4,20 @@
     <ion-list>
       <ion-list-header>タグ一覧</ion-list-header>
       @for (tag of uniqueTags; track tag.name) {
-        <ion-menu-toggle auto-hide="false">
-          <ion-item lines="none" detail="false" >
-            <ion-chip [color]="tagStyles.get(tag.name)?.color"
-                      [outline]="tagStyles.get(tag.name)?.outline"
-                      (click)="toggleTag(tag.name)"
-                      long-press [delay]="700" (press)="renameUniqueTag(tag.name, tag.editable)">
-              <ion-label>{{ tag.name }}</ion-label>
-            </ion-chip>
-          </ion-item>
-        </ion-menu-toggle>
+      <ion-menu-toggle auto-hide="false">
+        <ion-item lines="none" detail="false">
+          <ion-chip
+            [color]="tagStyles.get(tag.name)?.color"
+            [outline]="tagStyles.get(tag.name)?.outline"
+            (click)="toggleTag(tag.name)"
+            long-press
+            [delay]="700"
+            (press)="renameUniqueTag(tag.name, tag.editable)"
+          >
+            <ion-label>{{ tag.name }}</ion-label>
+          </ion-chip>
+        </ion-item>
+      </ion-menu-toggle>
       }
     </ion-list>
   </ion-content>
@@ -35,53 +39,67 @@
     </ion-toolbar>
   </ion-header>
   @if(showSearchBar){
-    <ion-toolbar class="search-toolbar">
-      <ion-searchbar
-        placeholder="ワード検索（本文・タグ）"
-        (ionInput)="onSearchChange()"
-        [(ngModel)]="searchWord"
-        name="searchWord">
-      </ion-searchbar>
-    </ion-toolbar>
+  <ion-toolbar class="search-toolbar">
+    <ion-searchbar
+      placeholder="ワード検索（本文・タグ）"
+      (ionInput)="onSearchChange()"
+      [(ngModel)]="searchWord"
+      name="searchWord"
+    >
+    </ion-searchbar>
+  </ion-toolbar>
   }
   <!-- 記事一覧 -->
   <ion-content [fullscreen]="true" class="ion-padding" class="has-header">
-  @if (diary.length === 0) {
+    @if (diary.length === 0) {
     <div class="empty-state">
       <ion-icon name="document-outline" size="large"></ion-icon>
-      <p>まだ記事がありません。<br>右下の + ボタンから新規作成できます。</p>
+      <p>まだ記事がありません。<br />右下の + ボタンから新規作成できます。</p>
     </div>
-  } @else {
+    } @else {
     <ion-list id="diary-list">
       @for (d of diary; track d) {
-        <ion-item button detail="false" 
-                  (click)="goEdit(d.id)"
-                  long-press [delay]="700"
-                  (press)="deleteEntry(d.id)">
-          <ion-label>
-            <h2>{{ d.date | date: 'yyyy/MM/dd ' }} ({{ weekDay[d.date.getDay()] }}) {{ d.date | date: ' HH:mm' }}</h2>
-            <p>{{ getPlainText(d.content) | slice:0:40 }}{{ getPlainText(d.content).length > 40 ? '...' : '' }}</p>
-            <div class="tags">
-              @for (tag of d.tags; track tag.name) {
-                <ion-chip [color]="tagStyles.get(tag.name)?.color"
-                          [outline]="tagStyles.get(tag.name)?.outline"
-                          (click)="toggleTag(tag.name, $event)"
-                          long-press [delay]="700" 
-                          (press)="deleteTag(tag.name, tag.editable, d.id)">
-                  <ion-label>{{ tag.name }}</ion-label>
-                </ion-chip>
-              }
-            </div>
-          </ion-label>
-        </ion-item>
+      <ion-item
+        button
+        detail="false"
+        (click)="goEdit(d.id)"
+        long-press
+        [delay]="700"
+        (press)="deleteEntry(d.id)"
+      >
+        <ion-label>
+          <h2>
+            {{ d.date | date: 'yyyy/MM/dd ' }} ({{ weekDay[d.date.getDay()] }})
+            {{ d.date | date: ' HH:mm' }}
+          </h2>
+          <p>
+            {{ getPlainText(d.content) | slice:0:40 }}{{
+            getPlainText(d.content).length > 40 ? '...' : '' }}
+          </p>
+          <div class="tags">
+            @for (tag of d.tags; track tag.name) {
+            <ion-chip
+              [color]="tagStyles.get(tag.name)?.color"
+              [outline]="tagStyles.get(tag.name)?.outline"
+              (click)="toggleTag(tag.name, $event)"
+              long-press
+              [delay]="700"
+              (press)="deleteTag(tag.name, tag.editable, d.id)"
+            >
+              <ion-label>{{ tag.name }}</ion-label>
+            </ion-chip>
+            }
+          </div>
+        </ion-label>
+      </ion-item>
       }
     </ion-list>
-  }
-  <!-- 記事新規作成ボタン -->
-  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-    <ion-fab-button (click)="addArticle()">
-      <ion-icon name="add"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
+    }
+    <!-- 記事新規作成ボタン -->
+    <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+      <ion-fab-button (click)="addArticle()">
+        <ion-icon name="add"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
   </ion-content>
 </div>

@@ -1,10 +1,12 @@
-import { Component, OnInit  } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonItem, IonInput,
-         IonButton, IonIcon, AlertController, NavController, IonChip, IonLabel,
-         ToastController  } from '@ionic/angular/standalone';
+import {
+  IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonItem, IonInput,
+  IonButton, IonIcon, AlertController, NavController, IonChip, IonLabel,
+  ToastController
+} from '@ionic/angular/standalone';
 import { DatePipe } from '@angular/common';
 import { addIcons } from 'ionicons';
 import { save, trash, arrowBackOutline, closeCircleOutline, imageOutline } from 'ionicons/icons';
@@ -15,7 +17,7 @@ import { Camera, CameraSource, CameraResultType } from '@capacitor/camera';
 interface DiaryEntry {
   id: number;
   content: string;
-  tags: ({name: string, editable: boolean})[];
+  tags: ({ name: string, editable: boolean })[];
   date: Date;
 }
 interface AppData {
@@ -31,8 +33,8 @@ const NEW_ARTICLE: number = -1;    //新規作成時を意味するid
   styleUrls: ['./edit-page.page.scss'],
   standalone: true,
   imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonButtons,
-            IonItem, IonInput, IonButton, IonIcon, IonChip, IonLabel,
-            DatePipe,]
+    IonItem, IonInput, IonButton, IonIcon, IonChip, IonLabel,
+    DatePipe,]
 })
 
 
@@ -42,7 +44,7 @@ export class EditPagePage implements OnInit {
   id: number;           //編集する日記のid
   index: number = -1;        //編集する日記の配列上の添字
   txt: string = "";           //表示テキスト
-  tags: ({name: string, editable: boolean})[] = [];   //表示タグ
+  tags: ({ name: string, editable: boolean })[] = [];   //表示タグ
   inputTag: string = "";    //入力タグ
   date: Date = new Date();         //最初に編集を開始した日時
   weekDay = ["日", "月", "火", "水", "木", "金", "土"];
@@ -55,7 +57,7 @@ export class EditPagePage implements OnInit {
     private nav: NavController,
     public toastController: ToastController,
   ) {
-    addIcons({save, trash, arrowBackOutline, closeCircleOutline, imageOutline});
+    addIcons({ save, trash, arrowBackOutline, closeCircleOutline, imageOutline });
   }
 
   async ngOnInit() {
@@ -86,7 +88,7 @@ export class EditPagePage implements OnInit {
       // 日時を取得
       this.date = new Date();
       // 年タグを自動追加
-      this.tags.push({name: this.date.getFullYear().toString(), editable: false});
+      this.tags.push({ name: this.date.getFullYear().toString(), editable: false });
     }
 
     // 初期内容を反映
@@ -185,7 +187,7 @@ export class EditPagePage implements OnInit {
   public async detectChangeTag(event: CustomEvent) {
     const value = event.detail.value.trim();
     if (value.length > 0 && !this.tags.some(t => t.name === value)) {
-      this.tags.push({name: value, editable: true});
+      this.tags.push({ name: value, editable: true });
     }
     this.inputTag = "";
 

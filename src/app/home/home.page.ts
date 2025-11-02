@@ -1,8 +1,10 @@
-import { Component, OnInit  } from '@angular/core';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonList, IonLabel, NavController, IonFab,
-         IonFabButton, IonIcon, IonMenu, IonListHeader, IonButtons, IonMenuButton, IonMenuToggle, IonChip,
-         AlertController, IonButton, MenuController,
-         IonSearchbar } from '@ionic/angular/standalone';
+import { Component, OnInit } from '@angular/core';
+import {
+  IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonList, IonLabel, NavController, IonFab,
+  IonFabButton, IonIcon, IonMenu, IonListHeader, IonButtons, IonMenuButton, IonMenuToggle, IonChip,
+  AlertController, IonButton, MenuController,
+  IonSearchbar
+} from '@ionic/angular/standalone';
 import { DatePipe, SlicePipe } from '@angular/common';
 import { addIcons } from 'ionicons';
 import { add, searchOutline } from 'ionicons/icons';
@@ -14,12 +16,11 @@ import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 
 
-
 // --- DiaryEntry インターフェース ---
 interface DiaryEntry {
   id: number;
   content: string;
-  tags: ({name: string, editable: boolean})[];
+  tags: ({ name: string, editable: boolean })[];
   date: Date;
 }
 interface AppData {
@@ -34,14 +35,14 @@ const NEW_ARTICLE: number = -1;    //新規作成時を意味するid
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
   imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonList, IonLabel,
-            IonFab, IonFabButton, IonIcon, IonMenu, IonListHeader, IonButtons, IonMenuButton, IonMenuToggle,
-            IonChip, IonButton, LongPressDirective, DatePipe, SlicePipe, IonSearchbar, FormsModule],
+    IonFab, IonFabButton, IonIcon, IonMenu, IonListHeader, IonButtons, IonMenuButton, IonMenuToggle,
+    IonChip, IonButton, LongPressDirective, DatePipe, SlicePipe, IonSearchbar, FormsModule],
 })
 export class HomePage implements OnInit {
   allDiary: DiaryEntry[] = [];
   diary: DiaryEntry[] = [];  // 表示用
   selectedTags: string[] = [];  // 選択されたタグ一覧
-  uniqueTags: {name: string, editable: boolean}[] = [];  // タグ一覧
+  uniqueTags: { name: string, editable: boolean }[] = [];  // タグ一覧
   tagStyles = new Map<string, { color: string; outline: boolean }>();
   searchWord: string = '';  // ワード検索用の変数
   showSearchBar: boolean = false; //  検索バーの表示フラグ
@@ -84,77 +85,79 @@ export class HomePage implements OnInit {
     );
   }
 
+  async ionViewDidEnter() {
+    // タブバー描画後にマージンを設定してバナーを表示
+    const tabBar = document.querySelector('ion-tab-bar');
+    const options: BannerAdOptions = {
+      adId: environment.admob.bannerId,
+      adSize: BannerAdSize.BANNER,
+      position: BannerAdPosition.BOTTOM_CENTER,
+      margin: tabBar ? tabBar.clientHeight : 0,
+    };
+    await AdMob.showBanner(options);
+  }
+
   async initHomePage() {
     // ローカルストレージからデータを取得
     this.getAppData();
 
-    // 🔽 タグや検索ワードをリセット
+    //  タグや検索ワードをリセット
     this.selectedTags = [];
     this.searchWord = '';
     this.updateTagStyles();
     this.diary = this.searchEntries();
 
-    // バナー広告を表示
-    this.showBanner();
+    // バナー広告を再表示
     await AdMob.resumeBanner();
-  }
-
-  async showBanner() {
-    const options: BannerAdOptions = {
-      adId: environment.admob.bannerId,
-      adSize: BannerAdSize.BANNER,
-      position: BannerAdPosition.BOTTOM_CENTER,
-    };
-    await AdMob.showBanner(options);
   }
 
   getAppData() {
     const data = localStorage.getItem('appData');
-      if (data) {
-        // ストレージから日記データをコピー
-        const appData = JSON.parse(data) as AppData;
-        this.allDiary = appData.diary;
-        // 文字列 → Date に変換
-        this.allDiary = this.allDiary.map(entry => ({
-          ...entry,
-          date: new Date(entry.date)
-        }));
-        // 表示用変数に日記データをコピー
-        this.diary = [...this.allDiary];
-        // タグ一覧を取得
-        this.getUniqueTags(this.allDiary);
-        // タグスタイルを初期化
-        this.initTagStyles();
-      }
+    if (data) {
+      // ストレージから日記データをコピー
+      const appData = JSON.parse(data) as AppData;
+      this.allDiary = appData.diary;
+      // 文字列 → Date に変換
+      this.allDiary = this.allDiary.map(entry => ({
+        ...entry,
+        date: new Date(entry.date)
+      }));
+      // 表示用変数に日記データをコピー
+      this.diary = [...this.allDiary];
+      // タグ一覧を取得
+      this.getUniqueTags(this.allDiary);
+      // タグスタイルを初期化
+      this.initTagStyles();
+    }
   }
 
   getPlainText(html: string): string {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/html');
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
 
-  // img タグを削除
-  doc.querySelectorAll('img').forEach(img => img.remove());
-  // div タグは中身を残して、その後にスペースを追加
-  doc.querySelectorAll('div').forEach(div => {
-    const fragment = doc.createDocumentFragment();
-    // 子要素（テキストやタグ）を全部移動
-    while (div.firstChild) {
-      fragment.appendChild(div.firstChild);
-    }
-    // 後ろにスペースを追加
-    fragment.appendChild(doc.createTextNode(' '));
-    // div を fragment で置き換える
-    div.parentNode?.replaceChild(fragment, div);
-  });
+    // img タグを削除
+    doc.querySelectorAll('img').forEach(img => img.remove());
+    // div タグは中身を残して、その後にスペースを追加
+    doc.querySelectorAll('div').forEach(div => {
+      const fragment = doc.createDocumentFragment();
+      // 子要素（テキストやタグ）を全部移動
+      while (div.firstChild) {
+        fragment.appendChild(div.firstChild);
+      }
+      // 後ろにスペースを追加
+      fragment.appendChild(doc.createTextNode(' '));
+      // div を fragment で置き換える
+      div.parentNode?.replaceChild(fragment, div);
+    });
 
-  // 残ったテキストを取得
-  return doc.body.textContent || '';
-}
+    // 残ったテキストを取得
+    return doc.body.textContent || '';
+  }
 
 
 
   getUniqueTags(entries: DiaryEntry[]) {
-    const map = new Map<string, {name: string, editable: boolean}>();
+    const map = new Map<string, { name: string, editable: boolean }>();
     for (const entry of entries) {
       for (const tag of entry.tags) {
         map.set(tag.name, { name: tag.name, editable: tag.editable });
@@ -229,7 +232,7 @@ export class HomePage implements OnInit {
   toggleTag(t: string, event?: Event) {
     if (event !== undefined) event.stopPropagation(); // クリックイベントの伝播を停止
     // タグスタイルを反転
-    this.tagStyles.set(t, { color: this.tagStyles.get(t)?.color as string, outline:!this.tagStyles.get(t)?.outline });
+    this.tagStyles.set(t, { color: this.tagStyles.get(t)?.color as string, outline: !this.tagStyles.get(t)?.outline });
 
     if (!this.tagStyles.get(t)?.outline) {
       // outline:falseの場合、タグ選択を有効化
@@ -252,7 +255,7 @@ export class HomePage implements OnInit {
     const txt: string = this.getPlainText(this.allDiary[index].content);
     const d: string = txt.substring(0, 12) + (txt.length > 12 ? '...' : '');
     const prompt = await this.alertController.create({
-      header:  '日記「' + d + '」を削除しますか？',
+      header: '日記「' + d + '」を削除しますか？',
       buttons: [
         {
           text: '閉じる'
@@ -287,7 +290,7 @@ export class HomePage implements OnInit {
     const txt: string = this.getPlainText(this.allDiary[index].content);
     const d: string = txt.substring(0, 12) + (txt.length > 12 ? '...' : '');
     const prompt = await this.alertController.create({
-      header:  'タグ「' + t + '」を日記「' + d +'」から削除しますか？',
+      header: 'タグ「' + t + '」を日記「' + d + '」から削除しますか？',
       buttons: [
         {
           text: '閉じる'
@@ -318,7 +321,7 @@ export class HomePage implements OnInit {
     if (!editable) return; // 編集不可タグはリネームしない
     await this.menuController.close();
     const prompt = await this.alertController.create({
-      header:  '新しいタグ名を入力してください',
+      header: '新しいタグ名を入力してください',
       inputs: [
         {
           name: 'tagName',
@@ -339,7 +342,7 @@ export class HomePage implements OnInit {
               return;
             }
             // タグ名を全記事で置換
-            for (let i:number = 0; i < this.allDiary.length; i++) {
+            for (let i: number = 0; i < this.allDiary.length; i++) {
               this.allDiary[i].tags = this.allDiary[i].tags.map(tag =>
                 tag.name === t ? { name: data.tagName.trim(), editable: tag.editable } : tag
               );
@@ -363,7 +366,7 @@ export class HomePage implements OnInit {
 
   async deleteUniqueTag(t: string) {
     const prompt = await this.alertController.create({
-      header:  'タグ「' + t + '」を削除しますか？',
+      header: 'タグ「' + t + '」を削除しますか？',
       buttons: [
         {
           text: '閉じる'
@@ -372,7 +375,7 @@ export class HomePage implements OnInit {
           text: '削除',
           handler: _ => {
             // タグを全記事から削除
-            for (let i:number = 0; i < this.allDiary.length; i++) {
+            for (let i: number = 0; i < this.allDiary.length; i++) {
               this.allDiary[i].tags = this.allDiary[i].tags.filter(tag => tag.name !== t);
             }
             // タグ一覧を更新
