@@ -1,20 +1,73 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/angular/standalone';
+import {
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonItem,
+  IonLabel,
+  IonToggle,
+  IonList,
+} from '@ionic/angular/standalone';
+import { Preferences } from '@capacitor/preferences';
+import { NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-settings',
+  standalone: true,
   templateUrl: './settings.page.html',
   styleUrls: ['./settings.page.scss'],
-  standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule]
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    IonItem,
+    IonLabel,
+    IonToggle,
+    IonList,
+  ],
 })
-export class SettingsPage implements OnInit {
+export class SettingsPage implements OnInit, OnDestroy {
+  lockEnabled = false;
+  private cancelListener!: () => void;
 
-  constructor() { }
+  constructor(private nav: NavController) { }
 
-  ngOnInit() {
+  async ngOnInit() {
+    const { value } = await Preferences.get({ key: 'lockEnabled' });
+    this.lockEnabled = value === 'true';
+
+    // ✅ 「キャンセル」イベントを監視
+    this.cancelListener = () => {
+      this.lockEnabled = false;
+      Preferences.set({ key: 'lockEnabled', value: 'false' });
+    };
+    window.addEventListener('passcode-cancelled', this.cancelListener);
   }
 
+  ngOnDestroy() {
+    // ✅ メモリリーク防止
+    window.removeEventListener('passcode-cancelled', this.cancelListener);
+  }
+
+  async onToggleLock(event: CustomEvent) {
+    const enabled = event.detail.checked;
+    this.lockEnabled = enabled;
+
+    await Preferences.set({
+      key: 'lockEnabled',
+      value: String(enabled),
+    });
+
+    if (enabled) {
+      this.nav.navigateForward('/set-passcode');
+    } else {
+      await Preferences.remove({ key: 'passcode' });
+    }
+  }
 }

@@ -35,4 +35,12 @@ export const routes: Routes = [
     path: 'edit-page/:id',
     loadComponent: () => import('./edit-page/edit-page.page').then( m => m.EditPagePage)
   },
+  {
+    path: 'set-passcode',
+    loadComponent: () => import('./set-passcode/set-passcode.page').then( m => m.SetPasscodePage)
+  },
+  {
+    path: 'lock',
+    loadComponent: () => import('./lock/lock.page').then( m => m.LockPage)
+  },
 ];

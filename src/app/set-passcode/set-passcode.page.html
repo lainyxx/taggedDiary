@@ -1,0 +1,41 @@
+<ion-header>
+  <ion-toolbar class="header-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>パスコード設定</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-item>
+    <ion-label position="stacked">パスコード</ion-label>
+    <ion-input
+      type="password"
+      maxlength="4"
+      [(ngModel)]="passcode"
+      placeholder="4桁の数字"
+      inputmode="numeric"
+    ></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="stacked">確認</ion-label>
+    <ion-input
+      type="password"
+      maxlength="4"
+      [(ngModel)]="confirmCode"
+      placeholder="もう一度入力"
+      inputmode="numeric"
+    ></ion-input>
+  </ion-item>
+
+  <ion-button expand="block" class="ion-margin-top" (click)="savePasscode()">
+    保存
+  </ion-button>
+
+  <p class="ion-text-center ion-margin-top" style="color: var(--ion-color-danger);">
+    {{ message }}
+  </p>
+</ion-content>
+

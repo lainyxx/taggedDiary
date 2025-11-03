@@ -1,13 +1,18 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>settings</ion-title>
+<ion-header>
+  <ion-toolbar class="header-toolbar">
+    <ion-title>設定</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">settings</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding">
+  <ion-list>
+    <ion-item>
+      <ion-label>画面ロックを有効にする</ion-label>
+      <ion-toggle
+        slot="end"
+        [checked]="lockEnabled"
+        (ionChange)="onToggleLock($event)"
+      ></ion-toggle>
+    </ion-item>
+  </ion-list>
 </ion-content>

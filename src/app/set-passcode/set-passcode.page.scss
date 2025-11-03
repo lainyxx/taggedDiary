@@ -1,0 +1,17 @@
+ion-toolbar {
+  position: relative;
+}
+
+ion-title {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+}
+
+ion-input {
+  font-size: 1.4rem;
+  letter-spacing: 0.3rem;
+  text-align: center;
+}
