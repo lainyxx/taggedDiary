@@ -153,7 +153,7 @@ export class EditPagePage implements OnInit {
               // 変更をStorageに保存
               this.saveAppData();
             }
-            this.nav.navigateBack('/tabs/home');
+            this.nav.pop();
           }
         }
       ]
@@ -172,7 +172,7 @@ export class EditPagePage implements OnInit {
           {
             text: '戻る',
             handler: _ => {
-              this.nav.navigateBack('/tabs/home');
+              this.nav.pop();
             }
           }
         ]
@@ -180,7 +180,7 @@ export class EditPagePage implements OnInit {
       prompt.present();
     }
     else {
-      this.nav.navigateBack('/tabs/home');
+      this.nav.pop();
     }
   }
 

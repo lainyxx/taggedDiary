@@ -97,6 +97,11 @@ export class HomePage implements OnInit {
     await AdMob.showBanner(options);
   }
 
+  async ionViewWillLeave() {
+
+    await AdMob.hideBanner();
+  }
+
   async initHomePage() {
     // ローカルストレージからデータを取得
     this.getAppData();
