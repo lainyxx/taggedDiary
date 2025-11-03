@@ -1,13 +1,52 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>calendar</ion-title>
+<ion-header>
+  <ion-toolbar class="header-toolbar">
+    <ion-title>カレンダー検索</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">calendar</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<!-- カレンダー部分（固定） -->
+<div class="calendar-fixed ion-padding">
+  <ion-item lines="none">
+    <ion-label position="stacked">日付を選択</ion-label>
+    <ion-datetime
+      presentation="date"
+      [(ngModel)]="selectedDate"
+      (ionChange)="onDateChange($event)"
+      [highlightedDates]="highlightedDates"
+    ></ion-datetime>
+  </ion-item>
+</div>
+
+<!-- ↓ この ion-content のみスクロールされる -->
+<ion-content class="entries-content">
+  @if (filteredEntries.length > 0) {
+  <ion-list>
+    <ion-list-header>
+      <ion-label> 選択した日付の日記 </ion-label>
+    </ion-list-header>
+
+    @for (entry of filteredEntries; track entry.id) {
+    <ion-item (click)="goEdit(entry.id)">
+      <ion-label>
+        <h2>{{ entry.date | date: 'yyyy/MM/dd' }}</h2>
+        <p>
+          {{ getPlainText(entry.content) | slice:0:40 }}{{
+          getPlainText(entry.content).length > 40 ? '...' : '' }}
+        </p>
+        <div class="tags">
+          @for (tag of entry.tags; track tag.name) {
+          <ion-chip>
+            <ion-label>{{ tag.name }}</ion-label>
+          </ion-chip>
+          }
+        </div>
+      </ion-label>
+    </ion-item>
+    }
+  </ion-list>
+  } @else if (selectedDate) {
+  <div class="no-entry ion-text-center ion-padding">
+    <p>この日には日記がありません。</p>
+  </div>
+  }
 </ion-content>

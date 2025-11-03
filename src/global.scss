@@ -56,3 +56,46 @@
 	--ion-color-tint: var(--ion-color-uneditable-tint);
 }
 
+.header-toolbar {
+  padding-top: 18px !important;
+}
+
+ion-title {
+  text-align: center;
+}
+
+/* カード内のタグを横スクロールさせる */
+.tags {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;       /* 横スクロール可能 */
+  white-space: nowrap;    /* 改行させない */
+  gap: 6px;               /* チップ間の隙間 */
+  padding: 4px 0;
+
+  -webkit-overflow-scrolling: touch; /* iOSの慣性スクロール */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ion-chip を横スクロール内で適切に収める */
+.tags ion-chip {
+  flex: 0 0 auto;             /* コンテンツ幅に合わせて固定 */
+  scroll-snap-align: start;   /* スナップ開始位置をタグの左端に */
+  margin: 0;                  /* gapで余白調整 */
+}
+
+// 個別ページのCSSだと反映されないためglobal.scssに記載
+//
+// 以下はカレンダーページのスタイル
+
+.no-entry {
+  text-align: center;
+  color: var(--ion-color-medium);
+  padding-top: 2em;
+}
+
+
+
+
