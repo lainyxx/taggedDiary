@@ -1,0 +1,25 @@
+<ion-header>
+  <ion-toolbar class="header-toolbar">
+    <ion-title class="center-title">ロック解除</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-item>
+    <ion-label position="stacked">パスコードを入力</ion-label>
+    <ion-input
+      type="password"
+      maxlength="4"
+      inputmode="numeric"
+      [(ngModel)]="enteredPasscode"
+    ></ion-input>
+  </ion-item>
+
+  <ion-button expand="block" class="ion-margin-top" (click)="unlock()">
+    解除
+  </ion-button>
+
+  <p class="ion-text-center ion-margin-top" style="color: var(--ion-color-danger)">
+    {{ message }}
+  </p>
+</ion-content>
