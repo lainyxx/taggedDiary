@@ -14,6 +14,7 @@ import { FormsModule } from '@angular/forms';
 import { environment } from '../../environments/environment';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { ChangeDetectorRef } from '@angular/core';
 
 
 // --- DiaryEntry インターフェース ---
@@ -54,7 +55,8 @@ export class HomePage implements OnInit {
     public nav: NavController,
     public alertController: AlertController,
     private menuController: MenuController,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {
     addIcons({ add, searchOutline });
     // ionViewWillEnterで初期化すると編集画面からの遷移時に発火しないため、手動で初期化
@@ -62,6 +64,7 @@ export class HomePage implements OnInit {
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: any) => {
         if (event.urlAfterRedirects === '/tabs/home') {
+          // 初期化メソッド
           this.initHomePage();
         }
       });
@@ -86,7 +89,7 @@ export class HomePage implements OnInit {
   }
 
   async ionViewDidEnter() {
-    // タブバー描画後にマージンを設定してバナーを表示
+    // ionViewDidEnterでタブバー描画後にマージンを設定してバナーを表示
     const tabBar = document.querySelector('ion-tab-bar');
     const options: BannerAdOptions = {
       adId: environment.admob.bannerId,
@@ -98,22 +101,21 @@ export class HomePage implements OnInit {
   }
 
   async ionViewWillLeave() {
-
     await AdMob.hideBanner();
   }
 
-  async initHomePage() {
+  initHomePage() {
     // ローカルストレージからデータを取得
     this.getAppData();
 
     //  タグや検索ワードをリセット
     this.selectedTags = [];
     this.searchWord = '';
-    this.updateTagStyles();
-    this.diary = this.searchEntries();
 
-    // バナー広告を再表示
-    await AdMob.resumeBanner();
+    // 描画完了後に広告を再開（自然なタイミング）
+    setTimeout(() => {
+      AdMob.resumeBanner();
+    }, 400);
   }
 
   getAppData() {
