@@ -22,6 +22,7 @@
     "@angular/platform-browser-dynamic": "^20.0.0",
     "@angular/router": "^20.0.0",
     "@capacitor-community/admob": "^7.0.3",
+    "@capacitor-community/sqlite": "^7.0.2",
     "@capacitor/android": "7.4.3",
     "@capacitor/app": "7.0.2",
     "@capacitor/camera": "^7.0.2",
