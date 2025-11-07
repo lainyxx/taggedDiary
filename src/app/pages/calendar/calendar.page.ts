@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ToastController } from '@ionic/angular/standalone';
 import { FormsModule } from '@angular/forms';
 import { filter } from 'rxjs/operators';
 import { Router, NavigationEnd } from '@angular/router';
-import { AdMob } from '@capacitor-community/admob';
+import { DatabaseService, DiaryEntry } from '../../services/database.service';
 
 import {
   IonHeader,
@@ -18,13 +19,6 @@ import {
   IonChip,
   NavController,
 } from '@ionic/angular/standalone';
-
-interface DiaryEntry {
-  id: number;
-  content: string;
-  tags: { name: string; editable: boolean }[];
-  date: Date;
-}
 
 interface AppData {
   version: number;
@@ -58,7 +52,9 @@ export class CalendarPage {
 
   constructor(
     public nav: NavController,
-    private router: Router
+    private router: Router,
+    private dbService: DatabaseService,
+    public toastController: ToastController,
   ) {
     // 編集ページなどから戻ったときに再読み込み
     this.router.events
@@ -70,28 +66,33 @@ export class CalendarPage {
       });
   }
 
-  /** ローカルストレージから日記をロード */
-  initCalendarPage() {
-    const data = localStorage.getItem('appData');
-    if (data) {
-      const appData = JSON.parse(data) as AppData;
-      this.allDiary = appData.diary.map((entry) => ({
-        ...entry,
-        date: new Date(entry.date),
-      }));
-
-      // 日記のある日をハイライト
-      this.highlightedDates = this.allDiary.map((entry) => {
-        const y = entry.date.getFullYear();
-        const m = (entry.date.getMonth() + 1).toString().padStart(2, '0');
-        const d = entry.date.getDate().toString().padStart(2, '0');
-        return {
-          date: `${y}-${m}-${d}`,
-          backgroundColor: 'rgba(56, 128, 255, 0.30)',
-          textColor: '#000',
-        };
-      });
+  // =====================================
+  // DBから日記をロード
+  // =====================================
+  async initCalendarPage() {
+    // DB初期化
+    try {
+      console.log('[App] Initializing database...');
+      await this.dbService.initDB();
+      console.log('[App] Database initialized successfully.');
+    } catch (err) {
+      console.error('[App] Database initialization failed:', err);
+      this.showToast('データベースの初期化に失敗しました。アプリを再起動してください。', "danger");
+      return;
     }
+    this.allDiary = await this.dbService.getAll();
+
+    // 日記のある日をハイライト
+    this.highlightedDates = this.allDiary.map((entry) => {
+      const y = entry.date.getFullYear();
+      const m = (entry.date.getMonth() + 1).toString().padStart(2, '0');
+      const d = entry.date.getDate().toString().padStart(2, '0');
+      return {
+        date: `${y}-${m}-${d}`,
+        backgroundColor: 'rgba(56, 128, 255, 0.30)',
+        textColor: '#000',
+      };
+    });
 
     // 🔸 selectedDate が null または未選択ならフィルタしない
     if (!this.selectedDate) {
@@ -113,7 +114,9 @@ export class CalendarPage {
     });
   }
 
-  /** 日付選択時のフィルタリング */
+  // =====================================
+  // 日付選択時のフィルタリング
+  // =====================================
   onDateChange(event: any) {
     const isoString: string = event.detail.value;
     if (!isoString) {
@@ -138,12 +141,16 @@ export class CalendarPage {
     });
   }
 
-  /** 編集ページに遷移 */
+  // =====================================
+  // 編集ページに遷移
+  // =====================================
   goEdit(id: number) {
     this.nav.navigateForward(`/edit-page/${id}`);
   }
 
-  /** 日記データのhtmlタグを消去 */
+  // =====================================
+  // 日記データのhtmlタグを消去
+  // =====================================
   getPlainText(html: string): string {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
@@ -165,5 +172,17 @@ export class CalendarPage {
 
     // 残ったテキストを取得
     return doc.body.textContent || '';
+  }
+
+  // =====================================
+  // トースト表示
+  // =====================================
+  private async showToast(message: string, color: 'success' | 'danger' | 'light' = 'light') {
+    const toast = await this.toastController.create({
+      message,
+      duration: 2000,
+      color,
+    });
+    await toast.present();
   }
 }

@@ -13,15 +13,15 @@ export const routes: Routes = [
     children: [
       {
         path: 'home',
-        loadComponent: () => import('./home/home.page').then(m => m.HomePage),
+        loadComponent: () => import('./pages/home/home.page').then(m => m.HomePage),
       },
       {
         path: 'calendar',
-        loadComponent: () => import('./calendar/calendar.page').then(m => m.CalendarPage),
+        loadComponent: () => import('./pages/calendar/calendar.page').then(m => m.CalendarPage),
       },
       {
         path: 'settings',
-        loadComponent: () => import('./settings/settings.page').then(m => m.SettingsPage),
+        loadComponent: () => import('./pages/settings/settings.page').then(m => m.SettingsPage),
       },
 
       {
@@ -33,14 +33,14 @@ export const routes: Routes = [
   },
   {
     path: 'edit-page/:id',
-    loadComponent: () => import('./edit-page/edit-page.page').then( m => m.EditPagePage)
+    loadComponent: () => import('./pages/edit-page/edit-page.page').then(m => m.EditPagePage)
   },
   {
     path: 'set-passcode',
-    loadComponent: () => import('./set-passcode/set-passcode.page').then( m => m.SetPasscodePage)
+    loadComponent: () => import('./pages/set-passcode/set-passcode.page').then(m => m.SetPasscodePage)
   },
   {
     path: 'lock',
-    loadComponent: () => import('./lock/lock.page').then( m => m.LockPage)
+    loadComponent: () => import('./pages/lock/lock.page').then(m => m.LockPage)
   },
 ];

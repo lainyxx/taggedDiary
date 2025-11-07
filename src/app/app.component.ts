@@ -1,11 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
-import { AdMob } from '@capacitor-community/admob';
-import { OnInit } from '@angular/core';
 import { NavController, Platform } from '@ionic/angular';
+import { Router, NavigationEnd } from '@angular/router';
+import { AdMob } from '@capacitor-community/admob';
 import { Preferences } from '@capacitor/preferences';
 import { App } from '@capacitor/app';
-import { Router, NavigationEnd } from '@angular/router';
+
+import { DatabaseService } from './services/database.service';
 
 @Component({
   selector: 'app-root',
@@ -16,66 +17,87 @@ import { Router, NavigationEnd } from '@angular/router';
 export class AppComponent implements OnInit {
   private lastUnlockTime = 0;
   private backgroundTime = 0;
-  lastUrl: string = '';
-  private readonly LOCK_TIMEOUT: number = 4000; // ← 4秒後に再ロック
-
+  private readonly LOCK_TIMEOUT = 4000; // 4秒
+  lastUrl = '';
 
   constructor(
     private platform: Platform,
     private nav: NavController,
     private router: Router,
+    private dbService: DatabaseService,
   ) {
-    this.initializeAdMob();
-  }
-
-  async initializeAdMob() {
-    try {
-      await AdMob.initialize({
-        testingDevices: [], // デバイスを指定可能
-        initializeForTesting: true, // 開発中は true
-      });
-    } catch (e) {
-      console.error('AdMob init failed', e);
-    }
-
+    this.initializeApp();
   }
 
   async ngOnInit() {
+    // ルーターイベント監視
     this.router.events.subscribe((event) => {
-      if (event instanceof NavigationEnd) {
-        // ロック画面以外の最後の閲覧ページを記録
-        if (!event.url.includes('/lock')) {
-          this.lastUrl = event.url;
-        }
+      if (event instanceof NavigationEnd && !event.url.includes('/lock')) {
+        this.lastUrl = event.url;
       }
     });
+  }
 
-    // 🔹 アプリのフォア・バック切り替え監視
+  /**
+   * ✅ アプリ起動時の初期化
+   */
+  private async initializeApp() {
+    await this.platform.ready();
+
+    await this.initializeAdMob();
+
+    // ロック初期チェック
+    await this.checkLock();
+
+    // アプリ状態変更監視
     App.addListener('appStateChange', async (state) => {
       if (state.isActive) {
-        // フォアグラウンドに復帰したとき
         const elapsed = Date.now() - this.backgroundTime;
         if (elapsed > this.LOCK_TIMEOUT) {
           await this.checkLock(true);
         }
+        // ✅ DBが閉じていたら再接続
+        const isDbOpen = await this.dbService.isDbOpen();
+        if (!isDbOpen) {
+          console.log('[App] Reconnecting to database...');
+          await this.dbService.initDB();
+        }
       } else {
-        // バックグラウンドになった時刻を記録
+        // バックグラウンドになった時刻記録＋DBを安全に閉じる
         this.backgroundTime = Date.now();
+        try {
+          await this.dbService.close();
+          console.log('[App] Database connection closed.');
+        } catch (err) {
+          console.warn('[App] DB close failed:', err);
+        }
       }
     });
+  }
 
-    await this.platform.ready();
-    await this.checkLock();
+  private async initializeAdMob() {
+    try {
+      await AdMob.initialize({
+        testingDevices: [],
+        initializeForTesting: true, // TASK: 本番はfalse
+      });
+      console.log('[App] AdMob initialized');
+    } catch (e) {
+      console.error('[App] AdMob init failed', e);
+    }
   }
 
   private async checkLock(isResume = false) {
-    const { value: lockEnabled } = await Preferences.get({ key: 'lockEnabled' });
-    const { value: passcode } = await Preferences.get({ key: 'passcode' });
+    const [lockEnabledRes, passcodeRes] = await Promise.all([
+      Preferences.get({ key: 'lockEnabled' }),
+      Preferences.get({ key: 'passcode' }),
+    ]);
 
-    if (lockEnabled === 'true' && passcode) {
-      // 起動時または一定時間経過後にロック画面へ
+    const lockEnabled = lockEnabledRes.value === 'true';
+    const passcode = passcodeRes.value;
+
+    if (lockEnabled && passcode) {
       if (!isResume || Date.now() - this.lastUnlockTime > this.LOCK_TIMEOUT) {
-        // 二重ロック防止
         if (!this.router.url.includes('/lock')) {
           this.nav.navigateForward('/lock');
         }
@@ -87,5 +109,4 @@ export class AppComponent implements OnInit {
   setUnlockTime() {
     this.lastUnlockTime = Date.now();
   }
-
 }

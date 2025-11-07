@@ -52,10 +52,17 @@
   <!-- 記事一覧 -->
   <ion-content [fullscreen]="true" class="ion-padding" class="has-header">
     @if (diary.length === 0) {
-    <div class="empty-state">
-      <ion-icon name="document-outline" size="large"></ion-icon>
-      <p>まだ記事がありません。<br />右下の + ボタンから新規作成できます。</p>
-    </div>
+      @if (isDBInitialized) {
+        <div class="empty-state">
+          <ion-icon name="document-outline" size="large"></ion-icon>
+          <p>まだ記事がありません。<br />右下の + ボタンから新規作成できます。</p>
+        </div>
+      } @else {
+        <div class="empty-state">
+          <ion-icon name="document-outline" size="large"></ion-icon>
+          <p>記事を読み込んでいます</p>
+        </div>
+      }
     } @else {
     <ion-list id="diary-list">
       @for (d of diary; track d) {

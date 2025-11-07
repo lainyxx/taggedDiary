@@ -12,14 +12,9 @@ import { addIcons } from 'ionicons';
 import { save, trash, arrowBackOutline, closeCircleOutline, imageOutline } from 'ionicons/icons';
 import { AdMob } from '@capacitor-community/admob';
 import { Camera, CameraSource, CameraResultType } from '@capacitor/camera';
+import { DatabaseService, DiaryEntry } from '../../services/database.service';
 
-// --- DiaryEntry インターフェース ---
-interface DiaryEntry {
-  id: number;
-  content: string;
-  tags: ({ name: string, editable: boolean })[];
-  date: Date;
-}
+
 interface AppData {
   version: number;
   diary: DiaryEntry[];
@@ -39,8 +34,6 @@ const NEW_ARTICLE: number = -1;    //新規作成時を意味するid
 
 
 export class EditPagePage implements OnInit {
-
-  diary: DiaryEntry[] = [];
   id: number;           //編集する日記のid
   index: number = -1;        //編集する日記の配列上の添字
   txt: string = "";           //表示テキスト
@@ -56,6 +49,7 @@ export class EditPagePage implements OnInit {
     public alertController: AlertController,
     private nav: NavController,
     public toastController: ToastController,
+    private dbService: DatabaseService,
   ) {
     addIcons({ save, trash, arrowBackOutline, closeCircleOutline, imageOutline });
   }
@@ -64,31 +58,20 @@ export class EditPagePage implements OnInit {
     await AdMob.hideBanner();
 
     this.id = Number(this.route.snapshot.paramMap.get('id'));
-    // ローカルストレージからデータを取得
-    const data = localStorage.getItem('appData');
-
-    if (data) {
-      // ストレージから日記データをコピー
-      const appData = JSON.parse(data) as AppData;
-      this.diary = appData.diary;
-      this.diary = this.diary.map(entry => ({
-        ...entry,
-        date: new Date(entry.date)
-      }));
-    }
 
     if (this.id !== NEW_ARTICLE) {
-      for (let i: number = 0; i < this.diary.length; i++) {
-        if (this.diary[i].id === this.id) this.index = i;
+      // 既存記事を取得
+      const allDiary = await this.dbService.getAll();
+      const entry = allDiary.find(e => e.id === this.id);
+      if (entry) {
+        this.txt = entry.content;
+        this.tags = entry.tags;
+        this.date = entry.date;
       }
-      this.txt = this.diary[this.index].content;
-      this.tags = this.diary[this.index].tags;
-      this.date = this.diary[this.index].date;
     } else {
-      // 日時を取得
-      this.date = new Date();
-      // 年タグを自動追加
-      this.tags.push({ name: this.date.getFullYear().toString(), editable: false });
+      // 新規作成：年タグを自動付与
+      const yearTag = this.date.getFullYear().toString();
+      this.tags.push({ name: yearTag, editable: false });
     }
 
     // 初期内容を反映
@@ -98,46 +81,39 @@ export class EditPagePage implements OnInit {
     }
   }
 
-  ngAfterViewInit() {
-
-  }
-
-  ionViewWillEnter() {
-  }
-
-
+  // =====================================
+  // 💾 保存
+  // =====================================
   async save() {
     const editor = document.getElementById('editor');
-    if (editor) {
-      this.txt = editor.innerHTML;  // HTMLを保存
+    if (editor) this.txt = editor.innerHTML;
+
+    const entry: DiaryEntry = {
+      id: this.id,
+      content: this.txt,
+      tags: this.tags,
+      date: this.date
+    };
+
+    try {
+      if (this.id === NEW_ARTICLE) {
+        const newId = await this.dbService.insertDiary(entry);
+        if (newId && newId > 0) this.id = newId; // ← 新しいIDを更新
+      } else {
+        await this.dbService.updateDiary(entry);
+      }
+
+      this.isSaved = true;
+      await this.showToast('保存しました！', 'success');
+    } catch (err) {
+      console.error('保存エラー:', err);
+      await this.showToast('保存に失敗しました！', 'danger');
     }
-
-    // 日記配列に保存
-    if (this.id === NEW_ARTICLE) {
-      const newid = this.diary.length > 0
-        ? Math.max(...this.diary.map(d => d.id)) + 1
-        : 0;
-      this.diary.unshift({ content: this.txt, tags: this.tags, date: this.date, id: newid });
-      this.id = newid;
-      this.index = 0;
-    } else {
-      this.diary[this.index].content = this.txt;
-      this.diary[this.index].tags = this.tags;
-    }
-
-    // Storage に保存
-    this.saveAppData();
-    this.isSaved = true;
-
-    // 保存完了トースト
-    const toast = await this.toastController.create({
-      message: '保存しました！',
-      duration: 2000,
-      color: 'light'
-    });
-    toast.present();
   }
 
+  // =====================================
+  // 🗑 削除
+  // =====================================
   async delete() {
     const prompt = await this.alertController.create({
       header: '日記を削除しますか？',
@@ -147,12 +123,11 @@ export class EditPagePage implements OnInit {
         },
         {
           text: '削除',
-          handler: _ => {
+          handler: async _ => {
             if (this.id !== NEW_ARTICLE) {
-              this.diary.splice(this.index, 1);
-              // 変更をStorageに保存
-              this.saveAppData();
+              await this.dbService.delete(this.id);
             }
+            await this.showToast('日記を削除しました！', 'success');
             this.nav.pop();
           }
         }
@@ -161,6 +136,9 @@ export class EditPagePage implements OnInit {
     prompt.present();
   }
 
+  // =====================================
+  // 🔙 戻る
+  // =====================================
   async goHome() {
     if (!this.isSaved) {
       const prompt = await this.alertController.create({
@@ -184,6 +162,9 @@ export class EditPagePage implements OnInit {
     }
   }
 
+  // =====================================
+  // 🏷 タグ処理
+  // =====================================
   public async detectChangeTag(event: CustomEvent) {
     const value = event.detail.value.trim();
     if (value.length > 0 && !this.tags.some(t => t.name === value)) {
@@ -193,16 +174,14 @@ export class EditPagePage implements OnInit {
 
     // 既存記事の編集時は変更を保存
     if (this.id !== NEW_ARTICLE) {
-      this.diary[this.index].tags = this.tags;
-      // 変更をStorageに保存
-      this.saveAppData();
-      // 保存完了のトーストを表示
-      const toast = await this.toastController.create({
-        message: '保存しました！',
-        duration: 2000,
-        color: 'light'
-      });
-      toast.present();
+      const entry: DiaryEntry = {
+        id: this.id,
+        content: this.txt,
+        tags: this.tags,
+        date: this.date
+      };
+      await this.dbService.updateDiary(entry);
+      await this.showToast('保存しました！', 'success');
     }
   }
 
@@ -210,24 +189,36 @@ export class EditPagePage implements OnInit {
     this.isSaved = false;
   }
 
-  removeTag(i: number) {
+  async removeTag(i: number) {
     this.tags.splice(i, 1);
     // 既存記事の編集時は変更を保存
     if (this.id !== NEW_ARTICLE) {
-      this.diary[this.index].tags = this.tags;
-      // 変更をStorageに保存
-      this.saveAppData();
+      const entry: DiaryEntry = {
+        id: this.id,
+        content: this.txt,
+        tags: this.tags,
+        date: this.date
+      };
+      await this.dbService.updateDiary(entry);
+      await this.showToast('保存しました！', 'success');
     }
   }
 
-  saveAppData() {
-    const appData: AppData = {
-      version: CURRENT_VERSION,
-      diary: this.diary
-    };
-    localStorage.setItem("appData", JSON.stringify(appData));
+  // =====================================
+  // トースト表示
+  // =====================================
+  private async showToast(message: string, color: 'success' | 'danger' | 'light' = 'light') {
+    const toast = await this.toastController.create({
+      message,
+      duration: 2000,
+      color,
+    });
+    await toast.present();
   }
 
+  // =====================================
+  // 🖼 画像挿入
+  // =====================================
   async insertImage() {
     const photo = await Camera.getPhoto({
       quality: 70,

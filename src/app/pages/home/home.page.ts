@@ -3,7 +3,7 @@ import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonList, IonLabel, NavController, IonFab,
   IonFabButton, IonIcon, IonMenu, IonListHeader, IonButtons, IonMenuButton, IonMenuToggle, IonChip,
   AlertController, IonButton, MenuController,
-  IonSearchbar
+  IonSearchbar, ToastController,
 } from '@ionic/angular/standalone';
 import { DatePipe, SlicePipe } from '@angular/common';
 import { addIcons } from 'ionicons';
@@ -11,19 +11,13 @@ import { add, searchOutline } from 'ionicons/icons';
 import { LongPressDirective } from './long-press.directive';
 import { AdMob, BannerAdOptions, BannerAdSize, BannerAdPosition, BannerAdPluginEvents, AdMobBannerSize, } from '@capacitor-community/admob';
 import { FormsModule } from '@angular/forms';
-import { environment } from '../../environments/environment';
+import { environment } from '../../../environments/environment';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
-import { ChangeDetectorRef } from '@angular/core';
+import { DatabaseService, DiaryEntry } from '../../services/database.service';
 
 
-// --- DiaryEntry インターフェース ---
-interface DiaryEntry {
-  id: number;
-  content: string;
-  tags: ({ name: string, editable: boolean })[];
-  date: Date;
-}
+
 interface AppData {
   version: number;
   diary: DiaryEntry[];
@@ -42,6 +36,7 @@ const NEW_ARTICLE: number = -1;    //新規作成時を意味するid
 export class HomePage implements OnInit {
   allDiary: DiaryEntry[] = [];
   diary: DiaryEntry[] = [];  // 表示用
+  isDBInitialized: boolean = false;
   selectedTags: string[] = [];  // 選択されたタグ一覧
   uniqueTags: { name: string, editable: boolean }[] = [];  // タグ一覧
   tagStyles = new Map<string, { color: string; outline: boolean }>();
@@ -56,10 +51,11 @@ export class HomePage implements OnInit {
     public alertController: AlertController,
     private menuController: MenuController,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private dbService: DatabaseService,
+    public toastController: ToastController,
   ) {
     addIcons({ add, searchOutline });
-    // ionViewWillEnterで初期化すると編集画面からの遷移時に発火しないため、手動で初期化
+    // ngOnInitの初期化では編集画面からの遷移時に発火しないため、手動で初期化
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: any) => {
@@ -104,38 +100,28 @@ export class HomePage implements OnInit {
     await AdMob.hideBanner();
   }
 
-  initHomePage() {
-    // ローカルストレージからデータを取得
-    this.getAppData();
+  async initHomePage() {
+    // DB初期化
+    try {
+      console.log('[App] Initializing database...');
+      await this.dbService.initDB();
+      console.log('[App] Database initialized successfully.');
+    } catch (err) {
+      console.error('[App] Database initialization failed:', err);
+      this.isDBInitialized = false;
+      this.showToast('データベースの初期化に失敗しました。アプリを再起動してください。', "danger");
+      return;
+    }
+    this.allDiary = await this.dbService.getAll();
+    this.diary = this.allDiary;
+    this.isDBInitialized = true;
 
-    //  タグや検索ワードをリセット
     this.selectedTags = [];
     this.searchWord = '';
+    this.getUniqueTags(this.allDiary);
+    this.initTagStyles();
 
-    // 描画完了後に広告を再開（自然なタイミング）
-    setTimeout(() => {
-      AdMob.resumeBanner();
-    }, 400);
-  }
-
-  getAppData() {
-    const data = localStorage.getItem('appData');
-    if (data) {
-      // ストレージから日記データをコピー
-      const appData = JSON.parse(data) as AppData;
-      this.allDiary = appData.diary;
-      // 文字列 → Date に変換
-      this.allDiary = this.allDiary.map(entry => ({
-        ...entry,
-        date: new Date(entry.date)
-      }));
-      // 表示用変数に日記データをコピー
-      this.diary = [...this.allDiary];
-      // タグ一覧を取得
-      this.getUniqueTags(this.allDiary);
-      // タグスタイルを初期化
-      this.initTagStyles();
-    }
+    setTimeout(() => AdMob.resumeBanner(), 400);
   }
 
   getPlainText(html: string): string {
@@ -232,7 +218,7 @@ export class HomePage implements OnInit {
     if (!this.showSearchBar) {
       // 検索窓を閉じたら検索をリセット
       this.searchWord = '';
-      this.diary = this.searchEntries();
+      this.diary = this.allDiary;
     }
   }
 
@@ -269,18 +255,22 @@ export class HomePage implements OnInit {
         },
         {
           text: '削除',
-          handler: _ => {
-            this.allDiary.splice(index, 1);
-            // タグ一覧を更新
-            this.getUniqueTags(this.allDiary);
-            // タグ一覧が更新されたので、選択タグも更新
-            this.selectedTags = this.selectedTags.filter(tag => this.uniqueTags.some(t => t.name === tag));
-            // 選択タグが更新されたので、タグスタイルを更新
-            this.updateTagStyles();
-            // 再検索
-            this.diary = this.searchEntries();
-            // 変更をStorageに保存
-            this.saveAppData();
+          handler: async _ => {
+            try {
+              this.allDiary.splice(index, 1);
+              // DB更新
+              await this.dbService.delete(id);
+              // タグ一覧を更新
+              this.getUniqueTags(this.allDiary);
+              // タグ一覧が更新されたので、選択タグも更新
+              this.selectedTags = this.selectedTags.filter(tag => this.uniqueTags.some(t => t.name === tag));
+              // 選択タグが更新されたので、タグスタイルを更新
+              this.updateTagStyles();
+              // 再検索
+              this.diary = this.searchEntries();
+            } catch (err) {
+              console.error('Delete failed', err);
+            }
           }
         }
       ]
@@ -304,19 +294,24 @@ export class HomePage implements OnInit {
         },
         {
           text: '削除',
-          handler: _ => {
-            // タグを記事から削除
-            this.allDiary[index].tags = this.allDiary[index].tags.filter(tag => tag.name !== t);
-            // タグ一覧を更新
-            this.getUniqueTags(this.allDiary);
-            // タグ一覧が更新されたので、選択タグも更新
-            this.selectedTags = this.selectedTags.filter(tag => this.uniqueTags.some(t => t.name === tag));
-            // 選択タグが更新されたので、タグスタイルを更新
-            this.updateTagStyles();
-            // 再検索
-            this.diary = this.searchEntries();
-            // 変更をStorageに保存
-            this.saveAppData();
+          handler: async _ => {
+            try {
+              // タグを記事から削除
+              this.allDiary[index].tags = this.allDiary[index].tags.filter(tag => tag.name !== t);
+              // DB更新
+              await this.dbService.updateDiary(this.allDiary[index]);
+              // タグ一覧を更新
+              this.getUniqueTags(this.allDiary);
+              // タグ一覧が更新されたので、選択タグも更新
+              this.selectedTags = this.selectedTags.filter(tag => this.uniqueTags.some(t => t.name === tag));
+              // 選択タグが更新されたので、タグスタイルを更新
+              this.updateTagStyles();
+              // 再検索
+              this.diary = this.searchEntries();
+
+            } catch (err) {
+              console.error('Tag delete failed', err);
+            }
           }
         }
       ]
@@ -343,7 +338,7 @@ export class HomePage implements OnInit {
         },
         {
           text: '変更',
-          handler: data => {
+          handler: async data => {
             if (!data.tagName || data.tagName.trim().length === 0) {
               this.deleteUniqueTag(t); // 空文字なら削除
               return;
@@ -354,6 +349,8 @@ export class HomePage implements OnInit {
                 tag.name === t ? { name: data.tagName.trim(), editable: tag.editable } : tag
               );
             }
+            // 全件DB更新(TASK:変更記事のみ更新で最適化)
+            await this.dbService.bulkUpdateFast(this.allDiary);
             // タグ一覧を更新
             this.getUniqueTags(this.allDiary);
             // 選択タグをクリア
@@ -362,8 +359,6 @@ export class HomePage implements OnInit {
             this.updateTagStyles();
             //　表示記事を更新
             this.diary = [...this.allDiary];
-            // 変更をStorageに保存
-            this.saveAppData();
           }
         }
       ]
@@ -380,11 +375,13 @@ export class HomePage implements OnInit {
         },
         {
           text: '削除',
-          handler: _ => {
+          handler: async _ => {
             // タグを全記事から削除
             for (let i: number = 0; i < this.allDiary.length; i++) {
               this.allDiary[i].tags = this.allDiary[i].tags.filter(tag => tag.name !== t);
             }
+            // 全件DB更新(TASK:変更記事のみ更新で最適化)
+            await this.dbService.bulkUpdateFast(this.allDiary);
             // タグ一覧を更新
             this.getUniqueTags(this.allDiary);
             // 選択タグをクリア
@@ -393,8 +390,6 @@ export class HomePage implements OnInit {
             this.updateTagStyles();
             //　表示記事を更新
             this.diary = [...this.allDiary];
-            // 変更をStorageに保存
-            this.saveAppData();
           }
         }
       ]
@@ -402,11 +397,24 @@ export class HomePage implements OnInit {
     await prompt.present();
   }
 
-  saveAppData() {
-    const appData: AppData = {
-      version: CURRENT_VERSION,
-      diary: this.allDiary
-    };
-    localStorage.setItem("appData", JSON.stringify(appData));
+  // =====================================
+  // トースト表示
+  // =====================================
+  private async showToast(message: string, color: 'success' | 'danger' | 'light' = 'light') {
+    const toast = await this.toastController.create({
+      message,
+      duration: 2000,
+      color,
+    });
+    await toast.present();
   }
+
+  // TASK: マイグレーション処理作成後に消去
+  // saveAppData() {
+  //   const appData: AppData = {
+  //     version: CURRENT_VERSION,
+  //     diary: this.allDiary
+  //   };
+  //   localStorage.setItem("appData", JSON.stringify(appData));
+  // }
 }

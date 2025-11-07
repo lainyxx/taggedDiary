@@ -14,7 +14,7 @@ import {
 } from '@ionic/angular/standalone';
 import { Preferences } from '@capacitor/preferences';
 import { NavController } from '@ionic/angular';
-import { AppComponent } from '../app.component';
+import { AppComponent } from '../../app.component';
 import { AdMob } from '@capacitor-community/admob';
 
 @Component({
