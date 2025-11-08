@@ -46,7 +46,7 @@ export class AppComponent implements OnInit {
     await this.platform.ready();
 
     // DB初期化
-    this.initializeDB();
+    await this.initializeDB();
 
     await this.initializeAdMob();
 
