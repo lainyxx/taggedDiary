@@ -26,10 +26,11 @@ export class AppComponent implements OnInit {
     private router: Router,
     private dbService: DatabaseService,
   ) {
-    this.initializeApp();
+
   }
 
   async ngOnInit() {
+    await this.initializeApp();
     // ルーターイベント監視
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd && !event.url.includes('/lock')) {
@@ -44,6 +45,9 @@ export class AppComponent implements OnInit {
   private async initializeApp() {
     await this.platform.ready();
 
+    // DB初期化
+    this.initializeDB();
+
     await this.initializeAdMob();
 
     // ロック初期チェック
@@ -56,12 +60,7 @@ export class AppComponent implements OnInit {
         if (elapsed > this.LOCK_TIMEOUT) {
           await this.checkLock(true);
         }
-        // ✅ DBが閉じていたら再接続
-        const isDbOpen = await this.dbService.isDbOpen();
-        if (!isDbOpen) {
-          console.log('[App] Reconnecting to database...');
-          await this.dbService.initDB();
-        }
+        await this.initializeDB();
       } else {
         // バックグラウンドになった時刻記録＋DBを安全に閉じる
         this.backgroundTime = Date.now();
@@ -73,6 +72,18 @@ export class AppComponent implements OnInit {
         }
       }
     });
+  }
+
+  // TASK: 失敗時にtoast追加
+  private async initializeDB() {
+    try {
+      console.log('[App] Initializing database...');
+      await this.dbService.initDB();
+      console.log('[App] Database initialized successfully.');
+    } catch (err) {
+      console.error('[App] Database initialization failed:', err);
+      return;
+    }
   }
 
   private async initializeAdMob() {
