@@ -57,8 +57,10 @@ export class EditPagePage implements OnInit {
   async ngOnInit() {
     await AdMob.hideBanner();
 
-    this.id = Number(this.route.snapshot.paramMap.get('id'));
+    // DB初期化を待つ
+    await this.dbService.waitForReady();
 
+    this.id = Number(this.route.snapshot.paramMap.get('id'));
     if (this.id !== NEW_ARTICLE) {
       // 既存記事を取得
       const allDiary = await this.dbService.getAll();
@@ -104,10 +106,10 @@ export class EditPagePage implements OnInit {
       }
 
       this.isSaved = true;
-      await this.showToast('保存しました！', 'success');
+      await this.showToast('保存しました！');
     } catch (err) {
       console.error('保存エラー:', err);
-      await this.showToast('保存に失敗しました！', 'danger');
+      await this.showToast('保存に失敗しました！');
     }
   }
 
@@ -127,7 +129,7 @@ export class EditPagePage implements OnInit {
             if (this.id !== NEW_ARTICLE) {
               await this.dbService.delete(this.id);
             }
-            await this.showToast('日記を削除しました！', 'success');
+            await this.showToast('日記を削除しました！');
             this.nav.pop();
           }
         }
@@ -181,7 +183,7 @@ export class EditPagePage implements OnInit {
         date: this.date
       };
       await this.dbService.updateDiary(entry);
-      await this.showToast('保存しました！', 'success');
+      await this.showToast('保存しました！');
     }
   }
 
@@ -200,7 +202,7 @@ export class EditPagePage implements OnInit {
         date: this.date
       };
       await this.dbService.updateDiary(entry);
-      await this.showToast('保存しました！', 'success');
+      await this.showToast('保存しました！');
     }
   }
 

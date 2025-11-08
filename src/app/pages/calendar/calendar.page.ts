@@ -70,16 +70,8 @@ export class CalendarPage {
   // DBから日記をロード
   // =====================================
   async initCalendarPage() {
-    // DB初期化
-    try {
-      console.log('[App] Initializing database...');
-      await this.dbService.initDB();
-      console.log('[App] Database initialized successfully.');
-    } catch (err) {
-      console.error('[App] Database initialization failed:', err);
-      this.showToast('データベースの初期化に失敗しました。アプリを再起動してください。', "danger");
-      return;
-    }
+    // DB初期化を待つ
+    await this.dbService.waitForReady();
     this.allDiary = await this.dbService.getAll();
 
     // 日記のある日をハイライト
