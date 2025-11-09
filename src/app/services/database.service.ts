@@ -116,6 +116,7 @@ export class DatabaseService {
         console.error('❌ Database initialization failed:', err);
         try {
           await this.sqlite.closeAllConnections();
+          console.log('[DB] Closed all stale connections. Retrying...');
           this.db = await this.sqlite.createConnection(
             this.DB_NAME, false, 'no-encryption', this.DB_VERSION, false
           );
@@ -124,6 +125,7 @@ export class DatabaseService {
           console.log('[DB] Database reinitialized successfully');
         } catch (err2) {
           console.error('💥 DB reinitialization failed:', err2);
+          throw new Error('DB init retry failed.'); // 上層でcatch
         }
       } finally {
         this.initInProgress = false;
@@ -207,17 +209,36 @@ export class DatabaseService {
   // ✅ DBを安全に閉じる
   // ==============================
   async close() {
-    if (this.db) {
-      try {
+    if (!this.db) return;
+
+    try {
+      const isOpen = (await this.db.isDBOpen()).result;
+      if (isOpen) {
         await this.db.close();
-        await this.sqlite.closeConnection(this.DB_NAME, false);
-      } catch (e) {
-        console.warn('[DB] close failed', e);
-      } finally {
-        this.db = null;
-        this.initialized = false;
       }
+    } catch (e) {
+      console.warn('[DB] db.close() failed:', e);
     }
+
+    try {
+      const isConn = (await this.sqlite.isConnection(this.DB_NAME, false)).result;
+      if (isConn) {
+        await this.sqlite.closeConnection(this.DB_NAME, false);
+      }
+    } catch (e) {
+      console.warn('[DB] closeConnection() failed:', e);
+    }
+
+    try {
+      await this.sqlite.checkConnectionsConsistency();
+    } catch {
+      // 破損状態なら強制リセット
+      await this.sqlite.closeAllConnections();
+    }
+
+    this.db = null;
+    this.initialized = false;
+    console.log('[DB] Connection fully closed.');
   }
 
   // ==============================

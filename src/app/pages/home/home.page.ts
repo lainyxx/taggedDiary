@@ -37,6 +37,7 @@ export class HomePage implements OnInit {
   allDiary: DiaryEntry[] = [];
   diary: DiaryEntry[] = [];  // 表示用
   isDBInitialized: boolean = false;
+  admobInitialized = false;
   selectedTags: string[] = [];  // 選択されたタグ一覧
   uniqueTags: { name: string, editable: boolean }[] = [];  // タグ一覧
   tagStyles = new Map<string, { color: string; outline: boolean }>();
@@ -85,7 +86,22 @@ export class HomePage implements OnInit {
   }
 
   async ionViewDidEnter() {
-    // ionViewDidEnterでタブバー描画後にマージンを設定してバナーを表示
+    // ==============================
+    // AdMob 初期化（初回のみ）
+    // ==============================
+    if (!this.admobInitialized) {
+      try {
+        await AdMob.initialize({
+          testingDevices: [],
+          initializeForTesting: true, // TASK: 本番はfalse
+        });
+        console.log('[App] AdMob initialized');
+      } catch (e) {
+        console.error('[App] AdMob init failed', e);
+      }
+      this.admobInitialized = true;
+    }
+
     const tabBar = document.querySelector('ion-tab-bar');
     const options: BannerAdOptions = {
       adId: environment.admob.bannerId,
@@ -93,7 +109,16 @@ export class HomePage implements OnInit {
       position: BannerAdPosition.BOTTOM_CENTER,
       margin: tabBar ? tabBar.clientHeight : 0,
     };
-    await AdMob.showBanner(options);
+
+    // ==============================
+    // 初期化完了後にバナー表示
+    // ==============================
+    try {
+      await AdMob.showBanner(options);
+      console.log('✅ AdMob banner shown');
+    } catch (err) {
+      console.error('🚨 AdMob showBanner error', err);
+    }
   }
 
   async ionViewWillLeave() {

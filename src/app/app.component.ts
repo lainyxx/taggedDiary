@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 import { NavController, Platform } from '@ionic/angular';
 import { Router, NavigationEnd } from '@angular/router';
-import { AdMob } from '@capacitor-community/admob';
 import { Preferences } from '@capacitor/preferences';
 import { App } from '@capacitor/app';
 
@@ -48,8 +47,6 @@ export class AppComponent implements OnInit {
     // DB初期化
     await this.initializeDB();
 
-    await this.initializeAdMob();
-
     // ロック初期チェック
     await this.checkLock();
 
@@ -83,18 +80,6 @@ export class AppComponent implements OnInit {
     } catch (err) {
       console.error('[App] Database initialization failed:', err);
       return;
-    }
-  }
-
-  private async initializeAdMob() {
-    try {
-      await AdMob.initialize({
-        testingDevices: [],
-        initializeForTesting: true, // TASK: 本番はfalse
-      });
-      console.log('[App] AdMob initialized');
-    } catch (e) {
-      console.error('[App] AdMob init failed', e);
     }
   }
 
