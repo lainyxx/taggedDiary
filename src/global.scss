@@ -34,26 +34,24 @@
 
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import '@ionic/angular/css/palettes/dark.system.css';
-
-
+@import "@ionic/angular/css/palettes/dark.system.css";
 
 :root {
-	--ion-color-uneditable: #E57A00;
-	--ion-color-uneditable-rgb: 229,122,0;
-	--ion-color-uneditable-contrast: #000000;
-	--ion-color-uneditable-contrast-rgb: 0,0,0;
-	--ion-color-uneditable-shade: #ca6b00;
-	--ion-color-uneditable-tint: #e8871a;
+  --ion-color-uneditable: #e57a00;
+  --ion-color-uneditable-rgb: 229, 122, 0;
+  --ion-color-uneditable-contrast: #000000;
+  --ion-color-uneditable-contrast-rgb: 0, 0, 0;
+  --ion-color-uneditable-shade: #ca6b00;
+  --ion-color-uneditable-tint: #e8871a;
 }
 
 .ion-color-uneditable {
-	--ion-color-base: var(--ion-color-uneditable);
-	--ion-color-base-rgb: var(--ion-color-uneditable-rgb);
-	--ion-color-contrast: var(--ion-color-uneditable-contrast);
-	--ion-color-contrast-rgb: var(--ion-color-uneditable-contrast-rgb);
-	--ion-color-shade: var(--ion-color-uneditable-shade);
-	--ion-color-tint: var(--ion-color-uneditable-tint);
+  --ion-color-base: var(--ion-color-uneditable);
+  --ion-color-base-rgb: var(--ion-color-uneditable-rgb);
+  --ion-color-contrast: var(--ion-color-uneditable-contrast);
+  --ion-color-contrast-rgb: var(--ion-color-uneditable-contrast-rgb);
+  --ion-color-shade: var(--ion-color-uneditable-shade);
+  --ion-color-tint: var(--ion-color-uneditable-tint);
 }
 
 .header-toolbar {
@@ -68,9 +66,9 @@ ion-title {
 .tags {
   display: flex;
   flex-direction: row;
-  overflow-x: auto;       /* 横スクロール可能 */
-  white-space: nowrap;    /* 改行させない */
-  gap: 6px;               /* チップ間の隙間 */
+  overflow-x: auto; /* 横スクロール可能 */
+  white-space: nowrap; /* 改行させない */
+  gap: 6px; /* チップ間の隙間 */
   padding: 4px 0;
 
   -webkit-overflow-scrolling: touch; /* iOSの慣性スクロール */
@@ -81,9 +79,14 @@ ion-title {
 
 /* ion-chip を横スクロール内で適切に収める */
 .tags ion-chip {
-  flex: 0 0 auto;             /* コンテンツ幅に合わせて固定 */
-  scroll-snap-align: start;   /* スナップ開始位置をタグの左端に */
-  margin: 0;                  /* gapで余白調整 */
+  flex: 0 0 auto; /* コンテンツ幅に合わせて固定 */
+  scroll-snap-align: start; /* スナップ開始位置をタグの左端に */
+  margin: 0; /* gapで余白調整 */
+}
+
+ion-input {
+  --placeholder-color: #aaa !important;
+  --placeholder-opacity: 1 !important;
 }
 
 // 個別ページのCSSだと反映されないためglobal.scssに記載
@@ -95,7 +98,3 @@ ion-title {
   color: var(--ion-color-medium);
   padding-top: 2em;
 }
-
-
-
-

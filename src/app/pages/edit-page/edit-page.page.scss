@@ -4,9 +4,8 @@ header {
 }
 
 .header-toolbar {
-   padding-top: 18px !important;
+  padding-top: 18px !important;
 }
-
 
 ion-item.tag-chips {
   --padding-start: 16px;
@@ -19,11 +18,9 @@ ion-item.tag-chips {
   }
 }
 
-
 ion-content {
   --padding-bottom: 24px;
 }
-
 
 #editor {
   height: 100%;
@@ -32,4 +29,16 @@ ion-content {
   line-height: 1.3;
   outline: none;
   overflow-y: auto;
+}
+
+/* 空のときにプレースホルダー表示 */
+#editor:empty:before {
+  content: attr(data-placeholder);
+  color: #aaa;
+  pointer-events: none;
+}
+
+/* フォーカス中はプレースホルダーを非表示 */
+#editor:focus:before {
+  content: "";
 }

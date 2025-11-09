@@ -187,10 +187,6 @@ export class EditPagePage implements OnInit {
     }
   }
 
-  detectChangeText() {
-    this.isSaved = false;
-  }
-
   async removeTag(i: number) {
     this.tags.splice(i, 1);
     // 既存記事の編集時は変更を保存
@@ -204,6 +200,20 @@ export class EditPagePage implements OnInit {
       await this.dbService.updateDiary(entry);
       await this.showToast('保存しました！');
     }
+  }
+
+  // =====================================
+  // 本文処理
+  // =====================================
+  detectChangeText() {
+    const editor = document.getElementById('editor');
+    if (!editor) return;
+    console.log(editor.innerHTML);
+    // 改行だけ残っている状態を検出して削除　(編集時に余分に追加される)
+    if (editor.innerHTML.trim() === '<br>' || editor.innerHTML.trim() === '<div><br></div>') {
+      editor.innerHTML = '';
+    }
+    this.isSaved = false;
   }
 
   // =====================================
