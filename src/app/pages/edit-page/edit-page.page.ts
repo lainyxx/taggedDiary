@@ -5,7 +5,6 @@ import { ActivatedRoute } from '@angular/router';
 import {
   IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonItem, IonInput,
   IonButton, IonIcon, AlertController, NavController, IonChip, IonLabel,
-  ToastController
 } from '@ionic/angular/standalone';
 import { DatePipe } from '@angular/common';
 import { addIcons } from 'ionicons';
@@ -13,13 +12,8 @@ import { save, trash, arrowBackOutline, closeCircleOutline, imageOutline } from 
 import { AdMob } from '@capacitor-community/admob';
 import { Camera, CameraSource, CameraResultType } from '@capacitor/camera';
 import { DatabaseService, DiaryEntry } from '../../services/database.service';
+import { ToastService } from '../../services/toast.service';
 
-
-interface AppData {
-  version: number;
-  diary: DiaryEntry[];
-}
-const CURRENT_VERSION = 1;  //appDataのバージョン
 const NEW_ARTICLE: number = -1;    //新規作成時を意味するid
 
 @Component({
@@ -48,7 +42,7 @@ export class EditPagePage implements OnInit {
     private route: ActivatedRoute,
     public alertController: AlertController,
     private nav: NavController,
-    public toastController: ToastController,
+    private toast: ToastService,
     private dbService: DatabaseService,
   ) {
     addIcons({ save, trash, arrowBackOutline, closeCircleOutline, imageOutline });
@@ -106,10 +100,10 @@ export class EditPagePage implements OnInit {
       }
 
       this.isSaved = true;
-      await this.showToast('保存しました！');
+      await this.toast.show('保存しました！');
     } catch (err) {
-      console.error('保存エラー:', err);
-      await this.showToast('保存に失敗しました！');
+      console.error('Save failed:', err);
+      await this.toast.show('保存に失敗しました！');
     }
   }
 
@@ -126,11 +120,16 @@ export class EditPagePage implements OnInit {
         {
           text: '削除',
           handler: async _ => {
-            if (this.id !== NEW_ARTICLE) {
-              await this.dbService.delete(this.id);
+            try {
+              if (this.id !== NEW_ARTICLE) {
+                await this.dbService.delete(this.id);
+              }
+              await this.toast.show('日記を削除しました！');
+              this.nav.pop();
+            } catch (err) {
+              console.error('Delete diary failed:', err);
+              await this.toast.show('削除に失敗しました！');
             }
-            await this.showToast('日記を削除しました！');
-            this.nav.pop();
           }
         }
       ]
@@ -183,7 +182,6 @@ export class EditPagePage implements OnInit {
         date: this.date
       };
       await this.dbService.updateDiary(entry);
-      await this.showToast('保存しました！');
     }
   }
 
@@ -198,7 +196,6 @@ export class EditPagePage implements OnInit {
         date: this.date
       };
       await this.dbService.updateDiary(entry);
-      await this.showToast('保存しました！');
     }
   }
 
@@ -214,18 +211,6 @@ export class EditPagePage implements OnInit {
       editor.innerHTML = '';
     }
     this.isSaved = false;
-  }
-
-  // =====================================
-  // トースト表示
-  // =====================================
-  private async showToast(message: string, color: 'success' | 'danger' | 'light' = 'light') {
-    const toast = await this.toastController.create({
-      message,
-      duration: 2000,
-      color,
-    });
-    await toast.present();
   }
 
   // =====================================
