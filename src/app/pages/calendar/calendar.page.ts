@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ToastController } from '@ionic/angular/standalone';
 import { FormsModule } from '@angular/forms';
 import { filter } from 'rxjs/operators';
 import { Router, NavigationEnd } from '@angular/router';
 import { DatabaseService, DiaryEntry } from '../../services/database.service';
-
+import { ToastService } from '../../services/toast.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { DestroyRef } from '@angular/core';
 import {
   IonHeader,
   IonToolbar,
@@ -18,12 +19,9 @@ import {
   IonListHeader,
   IonChip,
   NavController,
+  IonSpinner,
 } from '@ionic/angular/standalone';
 
-interface AppData {
-  version: number;
-  diary: DiaryEntry[];
-}
 
 @Component({
   selector: 'app-calendar',
@@ -42,6 +40,7 @@ interface AppData {
     IonList,
     IonListHeader,
     IonChip,
+    IonSpinner,
   ],
 })
 export class CalendarPage {
@@ -49,16 +48,21 @@ export class CalendarPage {
   allDiary: DiaryEntry[] = [];
   filteredEntries: DiaryEntry[] = [];
   highlightedDates: { date: string; textColor?: string; backgroundColor?: string }[] = [];
+  isLoading: boolean = true;
 
   constructor(
     public nav: NavController,
     private router: Router,
     private dbService: DatabaseService,
-    public toastController: ToastController,
+    private toast: ToastService,
+    private destroyRef: DestroyRef,
   ) {
     // 編集ページなどから戻ったときに再読み込み
     this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
+      .pipe(
+        filter(event => event instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef)
+      )
       .subscribe((event: any) => {
         if (event.urlAfterRedirects === '/tabs/calendar') {
           this.initCalendarPage();
@@ -70,45 +74,46 @@ export class CalendarPage {
   // DBから日記をロード
   // =====================================
   async initCalendarPage() {
-    // DB初期化を待つ
-    await this.dbService.waitForReady();
-    this.allDiary = await this.dbService.getAll();
-
-    // 日記のある日をハイライト
-    this.highlightedDates = this.allDiary.map((entry) => {
-      const y = entry.date.getFullYear();
-      const m = (entry.date.getMonth() + 1).toString().padStart(2, '0');
-      const d = entry.date.getDate().toString().padStart(2, '0');
-      return {
-        date: `${y}-${m}-${d}`,
-        backgroundColor: 'rgba(56, 128, 255, 0.30)',
-        textColor: '#000',
-      };
-    });
-
-    // 🔸 selectedDate が null または未選択ならフィルタしない
-    if (!this.selectedDate) {
-      this.filteredEntries = [];
-      return;
+    this.isLoading = true;
+    try {
+      // DB初期化を待つ
+      await this.dbService.waitForReady();
+      this.allDiary = await this.dbService.getAll();
+    } catch (err) {
+      console.error('[initCalendarPage] DB初期化または取得失敗:', err);
+      this.allDiary = [];
+      this.toast.show(
+        'データベースの初期化に失敗しました。アプリを再起動してください。'
+      );
+    } finally {
+      this.isLoading = false;
     }
 
-    // 🔸 selectedDate（string）から Date に変換して比較, 日記の表示を更新する
-    const [year, month, day] = this.selectedDate.split('-').map(Number);
-    const selected = new Date(year, month - 1, day);
+    // 日記のある日をハイライト
+    const uniqueDates = new Set<string>();
+    this.highlightedDates = [];
 
-    this.filteredEntries = this.allDiary.filter((entry) => {
-      const entryDate = new Date(entry.date);
-      return (
-        entryDate.getFullYear() === selected.getFullYear() &&
-        entryDate.getMonth() === selected.getMonth() &&
-        entryDate.getDate() === selected.getDate()
-      );
-    });
+    for (const entry of this.allDiary) {
+      const dateObj = typeof entry.date === 'string' ? new Date(entry.date) : entry.date;
+      const y = dateObj.getFullYear();
+      const m = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+      const d = dateObj.getDate().toString().padStart(2, '0');
+      const iso = `${y}-${m}-${d}`;
+
+      if (!uniqueDates.has(iso)) {
+        uniqueDates.add(iso);
+        this.highlightedDates.push({
+          date: iso,
+          backgroundColor: 'rgba(56, 128, 255, 0.30)',
+          textColor: '#000',
+        });
+      }
+    }
+
+    this.filterBySelectedDate();
   }
 
-  // =====================================
-  // 日付選択時のフィルタリング
-  // =====================================
+  // TASK:必要か不明
   onDateChange(event: any) {
     const isoString: string = event.detail.value;
     if (!isoString) {
@@ -117,11 +122,24 @@ export class CalendarPage {
     }
 
     const [year, month, day] = isoString.split('T')[0].split('-').map(Number);
-    const selected = new Date(year, month - 1, day);
-
     this.selectedDate = `${year}-${month.toString().padStart(2, '0')}-${day
       .toString()
       .padStart(2, '0')}`;
+
+    this.filterBySelectedDate();
+  }
+
+  // =====================================
+  // 日付選択時のフィルタリング
+  // =====================================
+  filterBySelectedDate() {
+    if (!this.selectedDate) {
+      this.filteredEntries = [];
+      return;
+    }
+
+    const [year, month, day] = this.selectedDate.split('-').map(Number);
+    const selected = new Date(year, month - 1, day);
 
     this.filteredEntries = this.allDiary.filter((entry) => {
       const entryDate = new Date(entry.date);
@@ -164,17 +182,5 @@ export class CalendarPage {
 
     // 残ったテキストを取得
     return doc.body.textContent || '';
-  }
-
-  // =====================================
-  // トースト表示
-  // =====================================
-  private async showToast(message: string, color: 'success' | 'danger' | 'light' = 'light') {
-    const toast = await this.toastController.create({
-      message,
-      duration: 2000,
-      color,
-    });
-    await toast.present();
   }
 }

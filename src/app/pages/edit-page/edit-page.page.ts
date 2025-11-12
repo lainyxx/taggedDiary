@@ -49,25 +49,37 @@ export class EditPagePage implements OnInit {
   }
 
   async ngOnInit() {
-    await AdMob.hideBanner();
+    try {
+      await AdMob.hideBanner();
+    } catch (e) {
+      console.warn('[AdMob] hideBanner failed:', e);
+    }
 
-    // DB初期化を待つ
-    await this.dbService.waitForReady();
+    try {
+      // DB初期化を待つ
+      await this.dbService.waitForReady();
 
-    this.id = Number(this.route.snapshot.paramMap.get('id'));
-    if (this.id !== NEW_ARTICLE) {
-      // 既存記事を取得
-      const allDiary = await this.dbService.getAll();
-      const entry = allDiary.find(e => e.id === this.id);
-      if (entry) {
-        this.txt = entry.content;
-        this.tags = entry.tags;
-        this.date = entry.date;
+      this.id = Number(this.route.snapshot.paramMap.get('id'));
+      if (this.id !== NEW_ARTICLE) {
+        // 既存記事を取得
+        const allDiary = await this.dbService.getAll();
+        const entry = allDiary.find(e => e.id === this.id);
+        if (entry) {
+          this.txt = entry.content;
+          this.tags = entry.tags;
+          this.date = entry.date;
+        }
+      } else {
+        // 新規作成：年タグを自動付与
+        const yearTag = this.date.getFullYear().toString();
+        this.tags.push({ name: yearTag, editable: false });
       }
-    } else {
-      // 新規作成：年タグを自動付与
-      const yearTag = this.date.getFullYear().toString();
-      this.tags.push({ name: yearTag, editable: false });
+    } catch (err) {
+      console.error('[initEditPage] DB初期化または取得失敗:', err);
+      this.toast.show(
+        'データベースの初期化に失敗しました。アプリを再起動してください。'
+      );
+      this.txt = "";
     }
 
     // 初期内容を反映
@@ -181,7 +193,14 @@ export class EditPagePage implements OnInit {
         tags: this.tags,
         date: this.date
       };
-      await this.dbService.updateDiary(entry);
+      try {
+        await this.dbService.updateDiary(entry);
+      } catch (err) {
+        console.error('[detectChangeTag] DB更新失敗:', err);
+        this.toast.show(
+          'タグの更新に失敗しました。'
+        );
+      }
     }
   }
 
@@ -195,7 +214,14 @@ export class EditPagePage implements OnInit {
         tags: this.tags,
         date: this.date
       };
-      await this.dbService.updateDiary(entry);
+      try {
+        await this.dbService.updateDiary(entry);
+      } catch (err) {
+        console.error('[removeTag] DB更新失敗:', err);
+        this.toast.show(
+          'タグの削除に失敗しました。'
+        );
+      }
     }
   }
 
@@ -217,17 +243,19 @@ export class EditPagePage implements OnInit {
   // 🖼 画像挿入
   // =====================================
   async insertImage() {
-    const photo = await Camera.getPhoto({
-      quality: 70,
-      allowEditing: false,
-      resultType: CameraResultType.Base64,
-      source: CameraSource.Photos
-    });
+    try {
+      const photo = await Camera.getPhoto({
+        quality: 70,
+        allowEditing: false,
+        resultType: CameraResultType.Base64,
+        source: CameraSource.Photos,
+      });
+      if (!photo?.base64String) return; // キャンセル時は何もしない
 
-    const imgUrl = `data:image/jpeg;base64,${photo.base64String}`;
-    const editor = document.getElementById('editor');  // 本文エディタのみ対象
+      const imgUrl = `data:image/jpeg;base64,${photo.base64String}`;
+      const editor = document.getElementById('editor');
+      if (!editor) return;
 
-    if (editor) {
       const img = document.createElement('img');
       img.src = imgUrl;
       img.style.maxWidth = '100%';
@@ -236,13 +264,14 @@ export class EditPagePage implements OnInit {
 
       const selection = window.getSelection();
       if (selection && selection.rangeCount > 0 && editor.contains(selection.anchorNode)) {
-        // エディタ内にカーソルがある場合挿入
         const range = selection.getRangeAt(0);
         range.insertNode(img);
       } else {
-        // カーソルがエディタ外なら末尾に挿入
         editor.appendChild(img);
       }
+
+    } catch (err) {
+      console.warn('[insertImage] cancelled or failed:', err);
     }
   }
 }

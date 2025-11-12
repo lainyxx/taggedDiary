@@ -19,7 +19,9 @@
 
 <!-- ↓ この ion-content のみスクロールされる -->
 <ion-content class="entries-content">
-  @if (filteredEntries.length > 0) {
+  @if (isLoading) {
+    <ion-spinner></ion-spinner>
+  } @else if (filteredEntries.length > 0) {
   <ion-list>
     <ion-list-header>
       <ion-label> 選択した日付の日記 </ion-label>
@@ -47,6 +49,10 @@
   } @else if (selectedDate) {
   <div class="no-entry ion-text-center ion-padding">
     <p>この日には日記がありません。</p>
+  </div>
+  } @else {
+    <div class="no-entry ion-text-center ion-padding">
+    <p>日付を選択してください。</p>
   </div>
   }
 </ion-content>

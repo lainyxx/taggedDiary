@@ -3,7 +3,7 @@ import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonList, IonLabel, NavController, IonFab,
   IonFabButton, IonIcon, IonMenu, IonListHeader, IonButtons, IonMenuButton, IonMenuToggle, IonChip,
   AlertController, IonButton, MenuController,
-  IonSearchbar,
+  IonSearchbar, IonSpinner,
 } from '@ionic/angular/standalone';
 import { DatePipe, SlicePipe } from '@angular/common';
 import { addIcons } from 'ionicons';
@@ -16,14 +16,10 @@ import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { DatabaseService, DiaryEntry } from '../../services/database.service';
 import { ToastService } from '../../services/toast.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { DestroyRef } from '@angular/core';
 
 
-
-interface AppData {
-  version: number;
-  diary: DiaryEntry[];
-}
-const CURRENT_VERSION = 1; // //appDataのバージョン
 const NEW_ARTICLE: number = -1;    //新規作成時を意味するid
 
 @Component({
@@ -32,12 +28,12 @@ const NEW_ARTICLE: number = -1;    //新規作成時を意味するid
   styleUrls: ['home.page.scss'],
   imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonList, IonLabel,
     IonFab, IonFabButton, IonIcon, IonMenu, IonListHeader, IonButtons, IonMenuButton, IonMenuToggle,
-    IonChip, IonButton, LongPressDirective, DatePipe, SlicePipe, IonSearchbar, FormsModule],
+    IonChip, IonButton, LongPressDirective, DatePipe, SlicePipe, IonSearchbar, FormsModule, IonSpinner],
 })
 export class HomePage implements OnInit {
   allDiary: DiaryEntry[] = [];
   diary: DiaryEntry[] = [];  // 表示用
-  isDBInitialized: boolean = false;
+  isLoading: boolean = true;
   admobInitialized = false;
   selectedTags: string[] = [];  // 選択されたタグ一覧
   uniqueTags: { name: string, editable: boolean }[] = [];  // タグ一覧
@@ -55,11 +51,15 @@ export class HomePage implements OnInit {
     private router: Router,
     private dbService: DatabaseService,
     private toast: ToastService,
+    private destroyRef: DestroyRef,
   ) {
     addIcons({ add, searchOutline });
     // ngOnInitの初期化では編集画面からの遷移時に発火しないため、手動で初期化
     this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
+      .pipe(filter(
+        event => event instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef)
+      )
       .subscribe((event: any) => {
         if (event.urlAfterRedirects === '/tabs/home') {
           // 初期化メソッド
@@ -127,19 +127,30 @@ export class HomePage implements OnInit {
   }
 
   async initHomePage() {
-    // DB初期化を待つ
-    await this.dbService.waitForReady();
-
-    this.allDiary = await this.dbService.getAll();
-    this.diary = this.allDiary;
-    this.isDBInitialized = true;
+    this.isLoading = true;
+    try {
+      await this.dbService.waitForReady();
+      this.allDiary = await this.dbService.getAll();
+      this.diary = this.allDiary;
+    } catch (err) {
+      console.error('[initHomePage] DB初期化または取得失敗:', err);
+      this.allDiary = [];
+      this.diary = [];
+      this.toast.show(
+        'データベースの初期化に失敗しました。アプリを再起動してください。'
+      );
+    } finally {
+      this.isLoading = false;
+    }
 
     this.selectedTags = [];
     this.searchWord = '';
     this.getUniqueTags(this.allDiary);
     this.initTagStyles();
 
-    setTimeout(() => AdMob.resumeBanner(), 400);
+    setTimeout(() => {
+      try { AdMob.resumeBanner(); } catch (e) { }
+    }, 400);
   }
 
   getPlainText(html: string): string {

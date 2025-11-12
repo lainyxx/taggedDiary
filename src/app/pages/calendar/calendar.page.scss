@@ -9,21 +9,13 @@
   padding-bottom: 8px;
 }
 
-/* 下のコンテンツにカレンダー分の余白を確保 */
-.entries-content {
-  --padding-start: 16px;
-  --padding-end: 16px;
-  --padding-top: 250px;
-  --padding-bottom: 16px;
-}
-
 /* カード内のタグを横スクロールさせる */
 .tags {
   display: flex;
   flex-direction: row;
-  overflow-x: auto;       /* 横スクロール可能 */
-  white-space: nowrap;    /* 改行させない */
-  gap: 6px;               /* チップ間の隙間 */
+  overflow-x: auto; /* 横スクロール可能 */
+  white-space: nowrap; /* 改行させない */
+  gap: 6px; /* チップ間の隙間 */
   padding: 4px 0;
 
   -webkit-overflow-scrolling: touch; /* iOSの慣性スクロール */
@@ -34,7 +26,7 @@
 
 /* ion-chip を横スクロール内で適切に収める */
 .tags ion-chip {
-  flex: 0 0 auto;             /* コンテンツ幅に合わせて固定 */
-  scroll-snap-align: start;   /* スナップ開始位置をタグの左端に */
-  margin: 0;                  /* gapで余白調整 */
+  flex: 0 0 auto; /* コンテンツ幅に合わせて固定 */
+  scroll-snap-align: start; /* スナップ開始位置をタグの左端に */
+  margin: 0; /* gapで余白調整 */
 }
