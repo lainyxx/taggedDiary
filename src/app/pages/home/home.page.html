@@ -50,17 +50,14 @@
   </ion-toolbar>
   }
   <!-- 記事一覧 -->
-  <ion-content [fullscreen]="true" class="ion-padding" class="has-header">
+  <ion-content [fullscreen]="true" class="ion-padding" class="has-header entries-content">
     @if (diary.length === 0) {
-      @if (isDBInitialized) {
-        <div class="empty-state">
-          <ion-icon name="document-outline" size="large"></ion-icon>
-          <p>まだ記事がありません。<br />右下の + ボタンから新規作成できます。</p>
-        </div>
+      @if (isLoading) {
+        <ion-spinner></ion-spinner>
       } @else {
         <div class="empty-state">
           <ion-icon name="document-outline" size="large"></ion-icon>
-          <p>記事を読み込んでいます</p>
+          <p>まだ記事がありません。<br />右下の + ボタンから新規作成できます。</p>
         </div>
       }
     } @else {
