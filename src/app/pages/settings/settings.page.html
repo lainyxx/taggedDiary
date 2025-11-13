@@ -14,5 +14,13 @@
         (ionChange)="onToggleLock($event)"
       ></ion-toggle>
     </ion-item>
+    <ion-item>
+      <ion-label>データのバックアップ</ion-label>
+      <ion-button (click)="exportData()">書き出し</ion-button>
+    </ion-item>
+    <ion-item>
+      <ion-label>データの復元</ion-label>
+      <ion-button (click)="importData()">読み込み</ion-button>
+    </ion-item>
   </ion-list>
 </ion-content>

@@ -273,4 +273,64 @@ export class DatabaseService {
       date: new Date(dbEntry.date),
     };
   }
+
+  // ==============================
+  // 💾 データ全件を書き出し（JSON文字列）
+  // ==============================
+  async exportAll(): Promise<string> {
+    const db = this.ensureDb();
+
+    const res = await db.query('SELECT * FROM diary ORDER BY date DESC;');
+    const entries: DBEntry[] = res.values ?? [];
+
+    // 整形済みJSONで返す（改行＆インデントあり）
+    return JSON.stringify(entries, null, 2);
+  }
+
+  // ==============================
+  // 📥 JSONからデータを読み込み（上書き／追加）
+  // ==============================
+  async importFromJson(json: string, overwrite = false): Promise<void> {
+    const db = this.ensureDb();
+
+    let parsed: DBEntry[];
+    try {
+      parsed = JSON.parse(json);
+      if (!Array.isArray(parsed)) {
+        throw new Error('Invalid JSON format: expected array');
+      }
+    } catch (err) {
+      throw new Error('JSONパースに失敗しました: ' + err);
+    }
+
+    await db.execute('BEGIN TRANSACTION;');
+    try {
+      if (overwrite) {
+        // テーブル全削除してから挿入
+        await db.execute('DELETE FROM diary;');
+      }
+
+      // 重複時は既存レコードを上書きするSQL
+      const statements = parsed.map(e => ({
+        statement: `
+        INSERT INTO diary (id, content, tags, date)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+          content = excluded.content,
+          tags = excluded.tags,
+          date = excluded.date;
+      `,
+        values: [e.id, e.content, e.tags, e.date],
+      }));
+
+      await db.executeSet(statements);
+      await db.execute('COMMIT;');
+      console.log(`[DB] import完了: ${parsed.length} 件`);
+    } catch (err) {
+      await db.execute('ROLLBACK;');
+      console.error('❌ import失敗:', err);
+      throw err;
+    }
+  }
+
 }
