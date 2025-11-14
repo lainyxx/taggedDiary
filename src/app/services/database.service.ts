@@ -34,6 +34,7 @@ export class DatabaseService {
   }
 
 
+
   // ==============================
   // ✅ 外部から DB ready を待機する
   // ==============================
@@ -303,14 +304,16 @@ export class DatabaseService {
       throw new Error('JSONパースに失敗しました: ' + err);
     }
 
-    await db.execute('BEGIN TRANSACTION;');
+    // --- 詳細ログを入れて原因を追いやすくする
+    console.log('DB LOG: BEGIN TRANSACTION');
+    await db.execute('BEGIN TRANSACTION');
+
     try {
       if (overwrite) {
-        // テーブル全削除してから挿入
-        await db.execute('DELETE FROM diary;');
+        console.log('DB LOG: DELETE FROM diary (overwrite)');
+        await db.execute('DELETE FROM diary');
       }
 
-      // 重複時は既存レコードを上書きするSQL
       const statements = parsed.map(e => ({
         statement: `
         INSERT INTO diary (id, content, tags, date)
@@ -318,16 +321,21 @@ export class DatabaseService {
         ON CONFLICT(id) DO UPDATE SET
           content = excluded.content,
           tags = excluded.tags,
-          date = excluded.date;
+          date = excluded.date
       `,
-        values: [e.id, e.content, e.tags, e.date],
+        values: [e.id, e.content, e.tags, e.date]
       }));
 
+      console.log('DB LOG: executeSet');
       await db.executeSet(statements);
-      await db.execute('COMMIT;');
       console.log(`[DB] import完了: ${parsed.length} 件`);
     } catch (err) {
-      await db.execute('ROLLBACK;');
+      try {
+        console.log('DB LOG: ROLLBACK');
+        await db.execute('ROLLBACK');
+      } catch (rbErr) {
+        console.warn('DB LOG: ROLLBACK failed or no transaction:', rbErr);
+      }
       console.error('❌ import失敗:', err);
       throw err;
     }
