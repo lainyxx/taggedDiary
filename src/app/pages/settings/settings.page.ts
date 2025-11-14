@@ -151,11 +151,11 @@ export class SettingsPage implements OnInit, OnDestroy {
           { text: 'キャンセル', role: 'cancel' },
           {
             text: '上書き',
-            handler: async () => this.handleImport(file, true)
+            handler: () => this.handleImport(file, true)
           },
           {
             text: '追加',
-            handler: async () => this.handleImport(file, false)
+            handler: () => this.handleImport(file, false)
           },
         ],
       });
@@ -167,6 +167,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   private async handleImport(file: any, overwrite: boolean) {
+
     try {
       if (!file.path) {
         throw new Error('ファイルパスが取得できません');
