@@ -316,12 +316,8 @@ export class DatabaseService {
 
       const statements = parsed.map(e => ({
         statement: `
-        INSERT INTO diary (id, content, tags, date)
+        INSERT OR IGNORE INTO diary (id, content, tags, date)
         VALUES (?, ?, ?, ?)
-        ON CONFLICT(id) DO UPDATE SET
-          content = excluded.content,
-          tags = excluded.tags,
-          date = excluded.date
       `,
         values: [e.id, e.content, e.tags, e.date]
       }));
