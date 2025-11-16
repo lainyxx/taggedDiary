@@ -116,3 +116,17 @@ ion-input {
   color: var(--ion-color-medium);
   padding-top: 2em;
 }
+
+// 設定ページ
+
+.horizontal-alert .alert-button-group {
+  display: flex;
+  flex-direction: row !important;
+  justify-content: space-between;
+  gap: 6px; /* ボタン間の余白を確保 */
+}
+
+.horizontal-alert .alert-button {
+  flex: 0 0 auto; /* ← 自動幅にする */
+  white-space: nowrap; /* ← 改行させない */
+}

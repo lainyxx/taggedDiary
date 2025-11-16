@@ -147,6 +147,7 @@ export class SettingsPage implements OnInit, OnDestroy {
       const alert = await this.alertController.create({
         header: '確認',
         message: '既存データをすべて上書きしますか？',
+        cssClass: 'horizontal-alert',
         buttons: [
           { text: 'キャンセル', role: 'cancel' },
           {
